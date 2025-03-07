@@ -5,9 +5,10 @@ import logo from '../assets/education.png';
 const ResponsiveAppBar: React.FC = () => {
     return (
         <AppBar position="fixed" sx={{ 
-          backgroundColor: '#303031', 
+          background: "linear-gradient(135deg, #1C1E22, #181A1F)", 
           color: "white", 
-          padding: '8px 0'
+          padding: '8px 0',
+          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.3)"
         }}>
             <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}> 
                 {/* Logo & Brand Name */}
@@ -20,7 +21,7 @@ const ResponsiveAppBar: React.FC = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}> 
                         <Typography 
                             variant="h6" 
-                            sx={{ fontSize: '1.4rem', color: 'white', fontFamily: 'Playfair Display, serif', fontWeight: 'bold' }}
+                            sx={{ fontSize: '1.4rem', color: 'white', fontFamily: 'Playfair Display, sans-serif', fontWeight: 'bold' }}
                         >
                             TempoLearn
                         </Typography>
