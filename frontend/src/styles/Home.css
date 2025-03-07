@@ -1,0 +1,50 @@
+/* 🔹 Home Page Container */
+.home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background: linear-gradient(135deg, #2A2D32, #1F3D3B, #196b59); /* ✅ Matches Landing Page */
+    color: white;
+    padding: 5vh 5vw;
+  }
+  
+  /* 🔹 Welcome Title */
+  .home-title {
+    font-weight: bold;
+    font-size: 2.5rem;
+    font-family: 'Playfair Display', serif;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* 🔹 Highlight for User Email */
+  .home-title .highlight {
+    color: #2ecc71; /* ✅ Matches green theme */
+    font-weight: bold;
+  }
+  
+  /* 🔹 Subtext */
+  .home-subtext {
+    font-size: 1.2rem;
+    font-family: sans-serif;
+    margin-top: 0.5rem;
+    opacity: 0.9;
+  }
+  
+  /* 🔹 Logout Button */
+  .logout-button {
+    background-color: #D7263D; /* ✅ Red for logout contrast */
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    margin-top: 20px;
+    border-radius: 8px;
+    transition: 0.3s ease-in-out;
+  }
+  
+  .logout-button:hover {
+    background-color: #B71C30; /* Slightly darker red on hover */
+  }
+  

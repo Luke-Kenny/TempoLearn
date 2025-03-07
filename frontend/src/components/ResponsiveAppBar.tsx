@@ -10,7 +10,12 @@ const ResponsiveAppBar: React.FC = () => {
           padding: '8px 0',
           boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.3)"
         }}>
-            <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}> 
+            <Toolbar sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'flex-start',
+                pl: 2, 
+                }}> 
                 {/* Logo & Brand Name */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px', ml: 3 }}>
                     <img 
