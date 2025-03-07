@@ -7,20 +7,42 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-service-account.json
-dist
-dist-ssr
-*.local
+# Node Modules (Dependencies)
+node_modules/
 
-# Editor directories and files
+# Firebase Credentials (VERY IMPORTANT)
+service-account.json
+firebaseConfig.ts
+
+# Environment Variables (Security)
+.env
+.env.local
+.env.development
+.env.production
+
+# Build & Cache
+dist/
+dist-ssr/
+.vite/
+.vite/deps/
+.vite-cache/
+
+# Editor Directories & Files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-dist/
+
+# Firebase Hosting Cache
+.firebase/
+
+# Temporary Files & OS-Specific Files
+*.cache
+*.bak
+*.swp
+Thumbs.db
