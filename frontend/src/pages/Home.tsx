@@ -1,27 +1,22 @@
 import React from "react";
-import { Container, Typography } from "@mui/material";
-import "../styles/App.css";
-import ResponsiveAppBar from "../components/ResponsiveAppBar";
-import Footer from "../components/Footer";
-
-console.log("✅ LandingPage.tsx is loading...");
+import { Button, Container, Typography } from "@mui/material";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/signin"); 
+  };
+
   return (
-    <div className="page-container">
-      <ResponsiveAppBar />
-      <div className="background content">
-        <Container maxWidth="md">
-          <Typography variant="h3" className="title">
-            Welcome to TempoLearn
-          </Typography>
-          <Typography variant="h6" className="description">
-            You logged in finally BOZO
-          </Typography>
-        </Container>
-      </div>
-      <Footer />
-    </div>
+    <Container>
+      <Typography variant="h4">Welcome, {user?.email}</Typography>
+      <Button variant="contained" onClick={handleLogout} sx={{ mt: 3 }}>Logout</Button>
+    </Container>
   );
 };
 
