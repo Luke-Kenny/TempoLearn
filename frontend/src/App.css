@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+
+/* Reset & Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: 'Playfair Display', serif;
+  overflow-x: hidden; /* Prevents horizontal scrolling */
+}
+
+
+/* Page Layout */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+/* Fullscreen Background */
+.background {
+  display: flex;
+  flex-direction: column; /* Ensures vertical stacking */
+  align-items: center; /* Centers horizontally */
+  justify-content: center; /* Centers vertically */
+  text-align: center;
+  width: 100vw;
+  min-height: 100vh; 
+  background-image: url('assets/background-landing2.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  padding: 5vh 5vw;
+}
+
+
+
+
+/* Content Box - Ensures proper width balance */
+.content-box {
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 2.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  width: 90%;
+  text-align: center;
+  margin: 0 auto; /* Ensures horizontal centering */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Ensures text is centered inside */
+}
+
+/* Landing Page Title & Description */
+.title {
+  font-weight: bold;
+  color: #70e187f1;
+  font-size: clamp(0.8rem, 2vw, 1rem); 
+  padding: 1.5rem;
+  font-family: sans-serif;
+  height: 70%;
+}
+
+
+
+.description {
+  color: white;
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  font-family: sans-serif;
+  
+}
+
