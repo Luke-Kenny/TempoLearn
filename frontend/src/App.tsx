@@ -1,29 +1,27 @@
 import React from "react";
-import { Container, Typography } from "@mui/material";
-import "./App.css";
-import ResponsiveAppBar from "./components/ResponsiveAppBar";
-import Footer from "./components/Footer";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./context/ProtectedRoute";
+import LandingPage from "./pages/LandingPage";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import Home from "./pages/Home";
 
-const LandingPage: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div className="page-container"> 
-      <ResponsiveAppBar />
-      <div className="background content">
-        <Container maxWidth="md">
-          <Typography variant="h3" className="title">
-            Welcome to TempoLearn
-          </Typography>
-          <Typography variant="h6" className="description">
-            Unfortunately we are still currently under development
-          </Typography>
-          <Typography variant="body1" className="subtext">
-            Stay tuned for updates!
-          </Typography>
-        </Container>
-      </div>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/home" element={<Home />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 
-export default LandingPage;
+export default App;

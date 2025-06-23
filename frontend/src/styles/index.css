@@ -1,0 +1,55 @@
+/* Ensure the root app fills the screen */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  font-family: 'Playfair Display', serif;
+  background-color: white; /* Ensure background is not transparent */
+}
+
+/* Ensure landing page elements are visible */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Ensure background image is properly sized */
+.background {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100vw;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  padding: 5vh 5vw;
+}
+
+/* Fix hidden text issues */
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #2ecc71;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+}
+
+.description {
+  font-size: 1.2rem;
+  color: white;
+}
+
+/* Ensure buttons are visible */
+button {
+  background-color: #228B22;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+}

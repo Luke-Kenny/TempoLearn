@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+
+/* Reset & Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: 'Playfair Display', serif;
+  overflow-x: hidden; /* Prevents horizontal scrolling */
+}
+
+/* Page Layout */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* 🔹 Fullscreen Background */
+.background {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100vw;
+  height: 100vh; /* Ensure it takes full viewport height */
+  min-height: 100%;
+  background: linear-gradient(135deg, #2A2D32, #1F3D3B, #196b59);
+
+
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  padding: 5vh 5vw;
+}
+
+/* 🔹 Content Box - Ensures proper width balance */
+.content-box {
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 3rem; /* Increased padding for better spacing */
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-width: 1100px; /* Increased for larger screens */
+  width: 90%;
+  text-align: center;
+  margin: auto; /* Ensure proper centering */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 🔹 Title Styling with Darker Edges */
+.title {
+  font-weight: bold;
+  color: #50FA7B; /* Vibrant green */
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  padding: 1rem;
+  font-family: 'Playfair Display', serif;
+  text-shadow:
+    2px 2px 5px rgba(0, 0, 0, 0.4),  /* Outer dark glow */
+    -2px -2px 5px rgba(0, 0, 0, 0.3), /* Inner dark shadow */
+    0px 0px 10px rgba(0, 0, 0, 0.6); /* Soft glow effect */
+  transition: text-shadow 0.3s ease-in-out;
+}
+
+
+.title .highlight {
+  color: #2ecc71; 
+}
+
+/* 🔹 Description */
+.description {
+  color: white;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-family: sans-serif;
+}
+
+/* ✨ Animated Get Started Button */
+.get-started-btn {
+  background: linear-gradient(135deg, #2ecc71, #27ae60); /* Gradient */
+  color: white;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px; /* Rounded corners */
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.get-started-btn:hover {
+  transform: scale(1.08); /* Slight enlargement */
+  background: linear-gradient(135deg, #27ae60, #219150);
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.get-started-btn:active {
+  transform: scale(0.95); /* Press-down effect */
+}
+
+/* 🔹 Responsive Design Fixes */
+@media (max-width: 768px) {
+  .background {
+    padding: 2rem 1rem;
+    height: auto; /* Ensures it adapts to content */
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .description {
+    font-size: 1rem;
+    padding: 0 10px;
+  }
+
+  .content-box {
+    max-width: 100%;
+    padding: 2rem;
+  }
+}
+
