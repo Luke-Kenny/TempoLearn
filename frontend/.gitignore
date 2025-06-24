@@ -12,7 +12,7 @@ node_modules/
 
 # Firebase Credentials (VERY IMPORTANT)
 service-account.json
-firebaseConfig.ts
+
 
 # Environment Variables (Security)
 .env
