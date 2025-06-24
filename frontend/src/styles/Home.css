@@ -1,4 +1,4 @@
-/* 🔹 Home Page Container */
+/* Home Page Container */
 .home-container {
     display: flex;
     flex-direction: column;
@@ -6,12 +6,12 @@
     justify-content: center;
     height: 100vh;
     text-align: center;
-    background: linear-gradient(135deg, #2A2D32, #1F3D3B, #196b59); /* ✅ Matches Landing Page */
+    background: linear-gradient(135deg, #2A2D32, #1F3D3B, #196b59); /* Matches Landing Page */
     color: white;
     padding: 5vh 5vw;
   }
   
-  /* 🔹 Welcome Title */
+  /* Welcome Title */
   .home-title {
     font-weight: bold;
     font-size: 2.5rem;
@@ -19,13 +19,13 @@
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
   }
   
-  /* 🔹 Highlight for User Email */
+  /* Highlight for User Email */
   .home-title .highlight {
-    color: #2ecc71; /* ✅ Matches green theme */
+    color: #2ecc71; /* Matches green theme */
     font-weight: bold;
   }
   
-  /* 🔹 Subtext */
+  /* Subtext */
   .home-subtext {
     font-size: 1.2rem;
     font-family: sans-serif;
@@ -33,9 +33,9 @@
     opacity: 0.9;
   }
   
-  /* 🔹 Logout Button */
+  /* Logout Button */
   .logout-button {
-    background-color: #D7263D; /* ✅ Red for logout contrast */
+    background-color: #D7263D; /* Red for logout contrast */
     color: white;
     padding: 10px 20px;
     font-size: 1rem;

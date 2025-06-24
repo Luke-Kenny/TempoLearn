@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
 
-/* 🔹 Full Page Background */
+/* Full Page Background */
 .auth-container {
     display: flex;
     justify-content: center;
@@ -19,7 +19,7 @@
     width: 90%;
 }
 
-/* ✅ Close Button */
+/* Close Button */
 .close-button {
     position: absolute;
     top: 12px; 
@@ -35,10 +35,10 @@
 }
 
 .close-button svg {
-    font-size: 1.1rem; /* ✅ Slightly smaller for aesthetics */
+    font-size: 1.1rem; /* Slightly smaller for aesthetics */
 }
 
-/* 🔹 Title */
+/* Title */
 .auth-title {
     font-size: 1.8rem;
     font-weight: bold;
@@ -48,12 +48,12 @@
     text-align: center;
 }
 
-/* 🔹 Input Fields */
+/* Input Fields */
 .auth-box .MuiTextField-root {
     margin-bottom: 15px;
 }
 
-/* 🔹 Error Message */
+/* Error Message */
 .error-text {
     color: red;
     font-size: 0.9rem;
@@ -61,7 +61,7 @@
     margin-bottom: 1rem;
 }
 
-/* 🔹 Submit Button */
+/* Submit Button */
 .auth-box .MuiButton-contained {
     background-color: #228B22;
     font-weight: bold;
@@ -85,10 +85,10 @@
 }
 
 .auth-box .MuiTypography-root button:hover {
-    text-decoration: underline; /* ✅ Adds a subtle effect */
+    text-decoration: underline; /* Adds a subtle effect */
 }
 
-/* 🔹 Responsive Design */
+/* Responsive Design */
 @media (max-width: 768px) {
     .auth-box {
         padding: 1.8rem;

@@ -22,7 +22,7 @@ html, body {
   width: 100%;
 }
 
-/* 🔹 Fullscreen Background */
+/* Fullscreen Background */
 .background {
   display: flex;
   flex-direction: column;
@@ -43,7 +43,7 @@ html, body {
   padding: 5vh 5vw;
 }
 
-/* 🔹 Content Box - Ensures proper width balance */
+/* Content Box - Ensures proper width balance */
 .content-box {
   background-color: rgba(255, 255, 255, 0.95);
   padding: 3rem; /* Increased padding for better spacing */
@@ -58,7 +58,7 @@ html, body {
   align-items: center;
 }
 
-/* 🔹 Title Styling with Darker Edges */
+/* Title Styling with Darker Edges */
 .title {
   font-weight: bold;
   color: #50FA7B; /* Vibrant green */
@@ -77,14 +77,14 @@ html, body {
   color: #2ecc71; 
 }
 
-/* 🔹 Description */
+/* Description */
 .description {
   color: white;
   font-size: clamp(1rem, 2vw, 1.2rem);
   font-family: sans-serif;
 }
 
-/* ✨ Animated Get Started Button */
+/* Animated Get Started Button */
 .get-started-btn {
   background: linear-gradient(135deg, #2ecc71, #27ae60); /* Gradient */
   color: white;
@@ -108,7 +108,7 @@ html, body {
   transform: scale(0.95); /* Press-down effect */
 }
 
-/* 🔹 Responsive Design Fixes */
+/* Responsive Design Fixes */
 @media (max-width: 768px) {
   .background {
     padding: 2rem 1rem;

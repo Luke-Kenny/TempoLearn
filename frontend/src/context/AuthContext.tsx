@@ -4,29 +4,33 @@ import { auth } from "../firebase/firebaseConfig";
 
 /**
  * Tracks user login/logout state.
-   Allows useAuth() hook in any component.
-   Persists authentication state when reloading the page.
- * 
+ * Allows useAuth() hook in any component.
+ * Persists authentication state when reloading the page.
  */
-
 
 // Define Auth Context Type
 interface AuthContextType {
   user: User | null;
   logout: () => Promise<void>;
+  loading: boolean;
 }
 
 // Create Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Auth Provider
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setLoading(false); // ✅ Ensure loading is false after checking auth
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -35,8 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, logout }}>
-      {children}
+    <AuthContext.Provider value={{ user, logout, loading }}>
+      {!loading && children} {/* Wait until auth status is resolved */}
     </AuthContext.Provider>
   );
 };

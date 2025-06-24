@@ -6,7 +6,7 @@ import { motion } from "framer-motion"; //animation
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import Footer from "../components/Footer";
 
-console.log("✅ LandingPage.tsx is loading...");
+console.log("LandingPage.tsx is loading...");
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,8 +16,8 @@ const LandingPage: React.FC = () => {
       <ResponsiveAppBar />
       <div className="background content">
         <Container maxWidth="md">
-        {/* Animated Title */}
-        <motion.div
+          {/* Animated Title */}
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}

@@ -25,7 +25,7 @@ const SignUp: React.FC = () => {
     setError("");
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate("/home"); // ✅ Redirect to Home upon successful signup
+      navigate("/home"); // Redirect to Home upon successful signup
     } catch (error: any) {
       setError(error.message);
     }
@@ -40,7 +40,7 @@ const SignUp: React.FC = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <Box className="auth-box">
-            {/* ✅ Close Button */}
+            {/* Close Button */}
             <IconButton className="close-button" onClick={() => navigate("/")}>
               <CloseIcon />
             </IconButton>
