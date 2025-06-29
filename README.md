@@ -1,8 +1,3 @@
-from datetime import datetime
-
-# Define updated README.md content
-readme_content = f"""# TempoLearn
-
 **TempoLearn** is a smart, evolving study assistant built using **React**, **TypeScript**, **Vite**, and **Material-UI**, deployed via **Firebase Hosting** with a clean, fast user interface. The platform empowers learners to create flashcards, track learning progress, and explore features like practice quizzes and visual progress charts. This version represents our latest development progress as of {datetime.today().strftime('%B %Y')}.
 
 ---
