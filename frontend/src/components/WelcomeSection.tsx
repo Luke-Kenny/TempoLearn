@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Container, Typography } from "@mui/material";
+import { Box, Button, Container, Typography, Divider } from "@mui/material";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -9,62 +9,89 @@ const WelcomeSection: React.FC = () => {
   const navigate = useNavigate();
 
   const handleTempoStudyClick = () => {
-    navigate("/tempostudy"); // placeholder route for the future page
+    navigate("/tempostudy"); // placeholder route
   };
 
   return (
-    <Container maxWidth="md" sx={{ pt: 12, pb: 6 }}>
+    <Container maxWidth="md" sx={{ pt: { xs: 18, sm: 22 }, pb: 10 }}>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
         <Typography
-          variant="h4"
+          variant="h3"
+          component="h1"
+          fontWeight={700}
           textAlign="center"
-          fontWeight="bold"
-          gutterBottom
-          sx={{ fontSize: { xs: "1.75rem", sm: "2.25rem" } }}
+          sx={{
+            fontSize: { xs: "2rem", sm: "2.75rem" },
+            mb: 2,
+            color: "#ffffff",
+          }}
         >
           Welcome to{" "}
           <Box component="span" sx={{ color: "#2ecc71" }}>
             TempoLearn
           </Box>
-          {user?.email ? `, ${user.email}!` : "!"}
+          {user?.email ? ` ${user.email}!` : "!"}
         </Typography>
 
+        <Divider
+          sx={{
+            mb: 3,
+            maxWidth: 160,
+            mx: "auto",
+            borderColor: "#2ecc71",
+            opacity: 0.8,
+          }}
+        />
+
         <Typography
-          variant="subtitle1"
-          color="text.secondary"
+          variant="h6"
           textAlign="center"
-          sx={{ color: "#ccc", maxWidth: 700, mx: "auto", mb: 4 }}
+          sx={{
+            color: "#bbb",
+            maxWidth: 720,
+            mx: "auto",
+            fontWeight: 400,
+            lineHeight: 1.6,
+            mb: 5,
+          }}
         >
-          Your personalized study assistant—designed to help you plan, track,
-          and master your academic goals with ease. Select a section below to
-          begin your learning journey.
+          Your intelligent study assistant — plan smarter, track progress, and
+          focus where it matters most. Kickstart your learning journey below.
         </Typography>
       </motion.div>
 
-      {/* Centered TempoStudy Button */}
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-        <Button
-          variant="contained"
-          onClick={handleTempoStudyClick}
-          sx={{
-            backgroundColor: "#2d9cdb",
-            textTransform: "none",
-            fontWeight: "bold",
-            borderRadius: "30px",
-            px: 4,
-            py: 1.2,
-            fontSize: "1rem",
-            "&:hover": {
-              backgroundColor: "#238ac9",
-            },
-          }}
+      {/* Modern Animated TempoStudy Button */}
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 300 }}
         >
-          TempoStudy
-        </Button>
+          <Button
+            variant="contained"
+            onClick={handleTempoStudyClick}
+            sx={{
+              backgroundColor: "#2d9cdb",
+              textTransform: "none",
+              fontWeight: 600,
+              letterSpacing: "0.5px",
+              borderRadius: "999px",
+              px: 6,
+              py: 1.6,
+              fontSize: "1.05rem",
+              boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
+              "&:hover": {
+                backgroundColor: "#238ac9",
+              },
+            }}
+          >
+            TempoStudy
+          </Button>
+        </motion.div>
       </Box>
     </Container>
   );

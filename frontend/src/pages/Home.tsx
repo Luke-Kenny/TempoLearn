@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import WelcomeSection from "../components/WelcomeSection";
 import CardCarousel from "../components/CardCarousel";
-import BottomCta from "../components/BottomCta";
+import Footer from "../components/Footer";
 
 const Home: React.FC = () => {
   return (
@@ -18,7 +18,7 @@ const Home: React.FC = () => {
       <ResponsiveAppBar />
       <WelcomeSection />
       <CardCarousel />
-      <BottomCta />
+      <Footer />
     </Box>
   );
 };

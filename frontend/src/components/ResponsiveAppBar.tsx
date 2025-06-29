@@ -1,8 +1,16 @@
+// src/components/ResponsiveAppBar.tsx
+
 import React from "react";
-import { AppBar, Toolbar, Box, Typography, Button } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Typography,
+  Button,
+} from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import logo from "../assets/education.png";
+import SchoolIcon from "@mui/icons-material/School";
 
 const ResponsiveAppBar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -14,76 +22,84 @@ const ResponsiveAppBar: React.FC = () => {
     navigate("/signin");
   };
 
-  // Optional: list of routes that shouldn't show the logout button
-  const hideLogoutOnPaths = ["/", "/signin", "/signup"];
-  const shouldShowLogout =
-    user && !hideLogoutOnPaths.includes(location.pathname);
+  const handleSignIn = () => {
+    navigate("/signin");
+  };
+
+  const hideAuthButtonsOnPaths = ["/signin", "/signup"];
+  const shouldShowAuthButton = !hideAuthButtonsOnPaths.includes(location.pathname);
 
   return (
     <AppBar
       position="fixed"
+      elevation={0}
       sx={{
-        background: "linear-gradient(135deg, #1C1E22, #181A1F)",
-        color: "white",
-        padding: "8px 0",
-        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.3)",
+        backgroundColor: "#14181c", // darker to match hero/feature blend
+        color: "#ffffff",
+        borderBottom: "1px solid #2a2a2a",
       }}
     >
       <Toolbar
+        disableGutters
         sx={{
+          px: 3,
+          minHeight: 64,
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          px: 3,
         }}
       >
-        {/* Logo & Brand Name */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <img src={logo} alt="App Logo" style={{ height: "40px" }} />
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontSize: "1.4rem",
-                color: "white",
-                fontFamily: "Playfair Display, sans-serif",
-                fontWeight: "bold",
-              }}
-            >
-              TempoLearn
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: "0.75rem",
-                color: "#8FBC8F",
-                fontWeight: "bold",
-                mt: "-2px",
-              }}
-            >
-              An Adaptive Study Management Tool
-            </Typography>
-          </Box>
+        {/* Logo and Brand Name */}
+        <Box
+          display="flex"
+          alignItems="center"
+          gap={1}
+          sx={{ cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        >
+          <SchoolIcon sx={{ color: "#2ecc71", fontSize: 24 }} />
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 600,
+              fontSize: "1.3rem",
+              fontFamily: "'Inter', sans-serif",
+              color: "#ffffff",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
+            Tempo
+            <Box component="span" sx={{ color: "#2ecc71" }}>
+              Learn
+            </Box>
+          </Typography>
         </Box>
 
-        {/* Show logout button only when user is signed in and not on landing/signin/signup */}
-        {shouldShowLogout && (
+        {/* Push button to the right */}
+        <Box sx={{ flexGrow: 1 }} />
+
+        {/* Conditionally render Sign In or Logout */}
+        {shouldShowAuthButton && (
           <Button
-            variant="outlined"
-            onClick={handleLogout}
+            onClick={user ? handleLogout : handleSignIn}
+            variant="contained"
             sx={{
-              color: "#e74c3c",
-              borderColor: "#e74c3c",
-              fontWeight: "bold",
+              backgroundColor: "#2ecc71",
+              color: "#fff",
               textTransform: "none",
+              fontWeight: 500,
+              borderRadius: "6px", // small, subtle rounding
+              px: 2.2,
+              py: 0.5,
+              fontSize: "0.85rem",
+              minHeight: "32px",
+              boxShadow: "none",
               "&:hover": {
-                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                borderColor: "#c0392b",
-                color: "#c0392b",
+                backgroundColor: "#27ae60",
               },
             }}
           >
-            Logout
+            {user ? "Logout" : "Sign In"}
           </Button>
         )}
       </Toolbar>

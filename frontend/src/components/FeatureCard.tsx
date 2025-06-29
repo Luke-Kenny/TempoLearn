@@ -1,3 +1,5 @@
+// src/components/FeatureCard.tsx
+
 import React from "react";
 import {
   Box,
@@ -19,6 +21,29 @@ interface FeatureCardProps {
   onToggle: () => void;
 }
 
+const getSummaryForTitle = (title: string): string => {
+  switch (title) {
+    case "Your Courses":
+      return "View and organize your enrolled subjects.";
+    case "Practice Quiz":
+      return "Quick tests tailored to your study sets.";
+    case "Flashcards":
+      return "Memory-boosting tools for key concepts.";
+    case "Progress Tracker":
+      return "Visualize learning milestones and habits.";
+    case "Settings":
+      return "Customize your learning preferences.";
+    case "Expert Solutions":
+      return "Step-by-step answers to hard problems.";
+    case "Study Guides":
+      return "Concise summaries for rapid revision.";
+    case "Daily Challenges":
+      return "New prompts to keep your streak alive.";
+    default:
+      return "Explore this feature to learn more.";
+  }
+};
+
 const FeatureCard: React.FC<FeatureCardProps> = ({
   title,
   icon,
@@ -32,9 +57,9 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 
   return (
     <Box
+      onClick={onToggle}
       sx={{
-        minWidth: isMobile ? 220 : 260,
-        maxWidth: isMobile ? 240 : 280,
+        width: 320, // Fixed to match CARD_WIDTH in CardCarousel
         height: isMobile ? 280 : 340,
         borderRadius: 6,
         backgroundColor: color,
@@ -44,6 +69,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
           transform: "translateY(-5px)",
           boxShadow: 6,
         },
+        cursor: "pointer",
       }}
     >
       <Card
@@ -81,14 +107,12 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
             sx={{ mb: 1, textAlign: "center" }}
             noWrap
           >
-            [Placeholder content for {title}]
+            {getSummaryForTitle(title)}
           </Typography>
 
           <Box
-            onClick={onToggle}
             sx={{
               mt: "auto",
-              cursor: "pointer",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",

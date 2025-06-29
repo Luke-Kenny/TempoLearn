@@ -15,7 +15,7 @@ interface AuthContextType {
   loading: boolean;
 }
 
-// Create Context
+// Creating Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Auth Provider
@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false); // ✅ Ensure loading is false after checking auth
+      setLoading(false); // Ensures loading is false after checking auth
     });
 
     return () => unsubscribe();
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider value={{ user, logout, loading }}>
-      {!loading && children} {/* Wait until auth status is resolved */}
+      {!loading && children} {/* Waits until auth status is resolved */}
     </AuthContext.Provider>
   );
 };

@@ -1,112 +1,56 @@
 import { Box, Container, Typography, styled, Link } from "@mui/material";
 
-// * Styled Components
-const CustomContainer = styled(Container)(({ theme }) => ({
-  display: "flex",
-  justifyContent: "space-between",
-  gap: theme.spacing(5),
-  flexWrap: "wrap",
+// Styled wrapper
+const FooterContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(4),
-  maxWidth: "1200px", // Sets max width for centered content
-  width: "100%", // Ensures full width
-  [theme.breakpoints.down("sm")]: {
-    flexDirection: "column",
-    textAlign: "center",
-  },
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  textAlign: "center",
+  gap: theme.spacing(2),
 }));
 
-const FooterLink = styled(Link)(({ /** theme */  }) => ({
-  fontSize: "16px",
-  color: "#7A7A7E",
-  fontWeight: "300",
-  cursor: "pointer",
+const FooterText = styled(Typography)({
+  color: "#B0B0B0",
+  fontSize: "0.9rem",
+  fontWeight: 300,
+});
+
+const FooterLink = styled(Link)({
+  color: "#8FBC8F",
+  fontSize: "0.9rem",
+  fontWeight: 400,
   textDecoration: "none",
   "&:hover": {
-    color: "#000",
+    textDecoration: "underline",
   },
-}));
+});
 
 export default function Footer() {
   return (
     <Box
       sx={{
         width: "100%",
-        backgroundColor: "#1C1C1D", // Dark footer background
+        backgroundColor: "#141c24",
         color: "white",
-        padding: "30px 0",
-        position: "relative", // Keep it at the bottom
-        left: 0,
+        padding: "15px 0",
+        position: "relative",
+        bottom: 0,
       }}
     >
-      <CustomContainer>
-        {/* About TempoLearn */}
-        <Box>
-          <Typography sx={{ fontSize: "20px", fontWeight: "700", mb: 2 }}>
-            About TempoLearn
-          </Typography>
-          <FooterLink href="#">What is TempoLearn?</FooterLink>
-          <br />
-          <FooterLink href="#">Our Vision</FooterLink>
-          <br />
-          <FooterLink href="#">Research & Development</FooterLink>
-          <br />
-        </Box>
+      <FooterContainer>
+        <FooterText>
+          A smarter, structured way to study. Our platform is under active development — exciting features are coming soon.
+        </FooterText>
 
-        {/* Study Resources */}
-        <Box>
-          <Typography sx={{ fontSize: "20px", fontWeight: "700", mb: 2 }}>
-            Study Resources
-          </Typography>
-          <FooterLink href="#">Schedule Planner</FooterLink>
-          <br />
-          <FooterLink href="#">Notes</FooterLink>
-          <br />
-          <FooterLink href="#">Learning Analytics</FooterLink>
-          <br />
-          <FooterLink href="#">Study Guides</FooterLink>
-        </Box>
+        <FooterLink href="mailto:lukekenny812@gmail.com">
+          Contact: lukekenny812@gmail.com
+        </FooterLink>
 
-        {/* Help & Support */}
-        <Box>
-          <Typography sx={{ fontSize: "20px", fontWeight: "700", mb: 2 }}>
-            Help & Support
-          </Typography>
-          <FooterLink href="#">FAQ - How to Use TempoLearn</FooterLink>
-          <br />
-          <FooterLink href="#">Technical Support</FooterLink>
-          <br />
-          <FooterLink href="#">Bug Reports</FooterLink>
-          <br />
-          <FooterLink href="#">Tutorials</FooterLink>
-        </Box>
-
-        {/* Legal & Policies */}
-        <Box>
-          <Typography sx={{ fontSize: "20px", fontWeight: "700", mb: 2 }}>
-            Legal & Policies
-          </Typography>
-          <FooterLink href="#">Academic Integrity</FooterLink>
-          <br />
-          <FooterLink href="#">Privacy Policy</FooterLink>
-          <br />
-          <FooterLink href="#">Terms of Service</FooterLink>
-        </Box>
-
-        {/* Contact & Feedback */}
-        <Box>
-          <Typography sx={{ fontSize: "20px", fontWeight: "700", mb: 2 }}>
-            Contact & Feedback
-          </Typography>
-          <Typography sx={{ fontSize: "16px", color: "#D1D1D1", fontWeight: "500", mb: 2 }}>
-            We'd love to hear from you!
-          </Typography>
-          <FooterLink href="mailto:lukekenny812@gmail.com">
-            lukekenny812@gmail.com
-          </FooterLink>
-          <br />
-          <FooterLink href="#"> Submit Feedback</FooterLink>
-        </Box>
-      </CustomContainer>
+        <FooterText sx={{ fontSize: "0.75rem", mt: 2 }}>
+          &copy; {new Date().getFullYear()} TempoLearn. All rights reserved.
+        </FooterText>
+      </FooterContainer>
     </Box>
   );
 }
