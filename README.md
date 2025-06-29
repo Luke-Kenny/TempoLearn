@@ -4,20 +4,20 @@
 
 ---
 
-## 🚀 Features
+## Features
 
-- ⚡ Powered by **Vite** for fast development and production builds.
-- 🛠 Built with **React 18** and **TypeScript**.
-- 🎨 Styled using **Material-UI** (MUI).
-- 🌐 Deployed to **Firebase Hosting** with a custom domain: [www.tempolearn.org](http://www.tempolearn.org).
-- 📁 Organized and scalable project structure for maintainability.
-- 💻 **Under development page** with a clean design and responsive layout.
-- 🔐 **Firebase Authentication** for secure user login.
-- 🚀 **CI/CD Pipeline** with **GitHub Actions** for automated deployments.
+- Powered by **Vite** for fast development and production builds  
+- Built with **React 18** and **TypeScript**  
+- Styled using **Material-UI (MUI)**  
+- Deployed to **Firebase Hosting** with a custom domain: [www.tempolearn.org](http://www.tempolearn.org)  
+- Organized and scalable project structure for maintainability  
+- Under development page with a clean design and responsive layout  
+- Firebase Authentication for secure user login  
+- CI/CD Pipeline using **GitHub Actions** for automated deployments  
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```plaintext
 TempoLearn/
@@ -40,155 +40,14 @@ TempoLearn/
 ├── package.json          # Project dependencies and scripts
 ├── tsconfig.json         # TypeScript configuration
 └── README.md             # Documentation
-```
-
 ---
 
-## 🛠️ Setup and Installation
+## Setup and Installation
+Prerequisites
+Node.js (v18+ recommended)
 
-### Prerequisites
-- **Node.js**: Ensure you have Node.js installed (recommended version: `18.x` or above).
-- **npm**: Comes with Node.js.
-- **Firebase CLI**: Install globally for Firebase Hosting deployment:
-  ```bash
-  npm install -g firebase-tools
-  ```
+npm (comes with Node.js)
 
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/TempoLearn.git
-   cd TempoLearn
-   ```
+Firebase CLI:
+- npm install -g firebase-tools
 
-2. Navigate to the `frontend` folder:
-   ```bash
-   cd frontend
-   ```
-
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-5. Open the app in your browser at [http://localhost:5173](http://localhost:5173).
-
----
-
-## 🌐 Deployment to Firebase Hosting
-
-### Firebase Hosting Setup
-1. **Build the production app**:
-   ```bash
-   npm run build
-   ```
-   This generates the production-ready files in the `dist` folder.
-
-2. **Deploy to Firebase Hosting**:
-   - Ensure Firebase CLI is logged in:
-     ```bash
-     firebase login
-     ```
-   - Deploy the app:
-     ```bash
-     firebase deploy
-     ```
-
-3. **Custom Domain**:
-   - The app is deployed to the custom domain: [www.tempolearn.org](http://www.tempolearn.org).
-   - DNS records were configured via Namecheap to point to Firebase Hosting.
-
----
-
-## 🔐 Firebase Authentication
-
-We have integrated **Firebase Authentication** to enable user login.
-
-### **Setup Firebase Authentication**
-1. Go to **Firebase Console → Authentication**.
-2. Enable **Email/Password Authentication** or other desired providers.
-3. Add authentication logic to the frontend using Firebase SDK.
-
-Example for Email/Password Login:
-```typescript
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-
-const auth = getAuth();
-signInWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    const user = userCredential.user;
-    console.log("User logged in:", user);
-  })
-  .catch((error) => {
-    console.error("Login failed:", error.message);
-  });
-```
-
----
-
-## 🚀 CI/CD: Automatic Deployments with GitHub Actions
-
-We have implemented **GitHub Actions** for **automated Firebase deployments**.
-
-### **How It Works**
-1. **Every push to `main` triggers a deployment**.
-2. **GitHub Actions runs build & deploy commands automatically**.
-3. **Live site is updated without manual intervention**.
-
-### **Trigger a Manual Deployment**
-```bash
-git commit --allow-empty -m "Trigger redeployment"
-git push origin main
-```
-
----
-
-## 🧑‍🎨 Under-Development Page
-
-The production environment features an **under-development page** to notify visitors that the app is being built. This page includes:
-- A **white background** with **green accents** for a clean and professional appearance.
-- A responsive design for all screen sizes.
-
----
-
-## 🧑‍💻 Technologies Used
-
-- **Frontend**: React + TypeScript
-- **Build Tool**: Vite
-- **Styling**: Material-UI (MUI)
-- **Hosting**: Firebase Hosting
-- **CI/CD**: GitHub Actions
-- **Authentication**: Firebase Authentication
-- **Domain Provider**: Namecheap
-
----
-
-## 📜 Roadmap
-
-- [x] Set up the frontend with React, Vite, and Material-UI.
-- [x] Deploy to Firebase Hosting and configure a custom domain.
-- [x] Create an under-development page for production.
-- [x] Add Firebase Authentication.
-- [x] Implement CI/CD pipeline with GitHub Actions.
-- [x] Integrate a fully responsive design.
-- [ ] Implement Firestore for data management.
-- [ ] Build core features (user profiles, courses, progress tracking).
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-## 📧 Contact
-
-For questions or feedback, feel free to reach out:
-- GitHub: [luke-kenny](https://github.com/Luke-Kenny)
-- Email: kennyluke31@gmail.com
