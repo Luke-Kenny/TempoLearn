@@ -7,6 +7,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Upload from "./pages/Upload";
+import MyMaterials from "./pages/MyMaterials";
 
 const App: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const App: React.FC = () => {
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<Home />} />
             <Route path="/tempostudy" element={<Upload />} />
+            <Route path="/mymaterials" element={<MyMaterials />} />
           </Route>
         </Routes>
       </Router>

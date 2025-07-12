@@ -9,7 +9,11 @@ const WelcomeSection: React.FC = () => {
   const navigate = useNavigate();
 
   const handleTempoStudyClick = () => {
-    navigate("/tempostudy"); 
+    navigate("/tempostudy");
+  };
+
+  const handleMyNotesClick = () => {
+    navigate("/mymaterials");
   };
 
   return (
@@ -64,8 +68,16 @@ const WelcomeSection: React.FC = () => {
         </Typography>
       </motion.div>
 
-      {/* Modern Animated TempoStudy Button */}
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
+      {/* Button Row */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          gap: 3,
+        }}
+      >
+        {/* TempoStudy Button */}
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
@@ -90,6 +102,35 @@ const WelcomeSection: React.FC = () => {
             }}
           >
             TempoStudy
+          </Button>
+        </motion.div>
+
+        {/* My Notes Button */}
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          <Button
+            variant="outlined"
+            onClick={handleMyNotesClick}
+            sx={{
+              color: "#ffffff",
+              borderColor: "#2ecc71",
+              textTransform: "none",
+              fontWeight: 600,
+              letterSpacing: "0.5px",
+              borderRadius: "999px",
+              px: 6,
+              py: 1.6,
+              fontSize: "1.05rem",
+              "&:hover": {
+                borderColor: "#27ae60",
+                backgroundColor: "rgba(46, 204, 113, 0.1)",
+              },
+            }}
+          >
+            My Notes
           </Button>
         </motion.div>
       </Box>

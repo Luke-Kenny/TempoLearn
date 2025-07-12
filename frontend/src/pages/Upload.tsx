@@ -11,6 +11,7 @@ import { Timestamp, collection, addDoc } from "firebase/firestore";
 import { ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
+import { extractTextFromPDF } from "../utils/pdfParser";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 
 const MAX_FILE_SIZE_MB = 5;
@@ -40,15 +41,21 @@ const Upload: React.FC = () => {
     setLoading(true);
 
     try {
+      // Extract text from PDF
+      const extractedText = await extractTextFromPDF(file);
+
+      // Upload file to Firebase Storage
       const storageRef = ref(storage, `uploads/${user.uid}/${file.name}`);
       await uploadBytes(storageRef, file);
 
+      // Store metadata + extracted content in Firestore
       await addDoc(collection(db, "study_materials"), {
         uid: user.uid,
         topic,
         deadline: Timestamp.fromDate(new Date(deadline)),
         fileName: file.name,
         uploadedAt: Timestamp.now(),
+        textContent: extractedText,
       });
 
       setMessage("Upload successful!");
@@ -157,6 +164,7 @@ const Upload: React.FC = () => {
               border: "1px solid #334155",
               padding: "8px",
               borderRadius: "6px",
+              width: "100%",
             }}
           />
         </Box>
@@ -183,7 +191,10 @@ const Upload: React.FC = () => {
         {message && (
           <Typography
             variant="body2"
-            sx={{ mt: 1, color: message.includes("successful") ? "#4ade80" : "#f87171" }}
+            sx={{
+              mt: 1,
+              color: message.includes("successful") ? "#4ade80" : "#f87171",
+            }}
           >
             {message}
           </Typography>
