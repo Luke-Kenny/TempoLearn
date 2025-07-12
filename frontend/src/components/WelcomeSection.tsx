@@ -9,7 +9,7 @@ const WelcomeSection: React.FC = () => {
   const navigate = useNavigate();
 
   const handleTempoStudyClick = () => {
-    navigate("/tempostudy"); // placeholder route
+    navigate("/tempostudy"); 
   };
 
   return (
