@@ -13,6 +13,7 @@ import { db, storage } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
 import { extractTextFromPDF } from "../utils/pdfParser";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
+import BackButton from "../components/BackButton";
 
 const MAX_FILE_SIZE_MB = 5;
 
@@ -83,6 +84,7 @@ const Upload: React.FC = () => {
       }}
     >
       <ResponsiveAppBar />
+      <BackButton />
       <Paper
         elevation={8}
         sx={{

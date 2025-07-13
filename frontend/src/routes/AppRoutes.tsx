@@ -6,6 +6,7 @@ import Home from "../pages/Home";
 import Upload from "../pages/Upload";
 import MyMaterials from "../pages/MyMaterials";
 import ProtectedRoute from "../context/ProtectedRoute";
+import QuizPage from "../pages/QuizPage";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ const AppRoutes: React.FC = () => {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/mymaterials" element={<MyMaterials />} />
+          <Route path="/quiz" element={<QuizPage />} />
         </Route>
 
         <Route path="/signin" element={<SignIn />} />

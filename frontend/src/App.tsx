@@ -8,6 +8,7 @@ import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Upload from "./pages/Upload";
 import MyMaterials from "./pages/MyMaterials";
+import QuizPage from "./pages/QuizPage";
 
 const App: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const App: React.FC = () => {
             <Route path="/home" element={<Home />} />
             <Route path="/tempostudy" element={<Upload />} />
             <Route path="/mymaterials" element={<MyMaterials />} />
+            <Route path="/quiz" element={<QuizPage />} />
           </Route>
         </Routes>
       </Router>
