@@ -40,3 +40,10 @@ TempoLearn/
 ├── package.json
 ├── tsconfig.json
 └── README.md
+
+
+TO RUN BACKEND:
+npx ts-node-dev src/index.ts
+
+TO RUN FRONTEND
+npm run dev 
