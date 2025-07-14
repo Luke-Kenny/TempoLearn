@@ -12,6 +12,7 @@ import { ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
 import { extractTextFromPDF } from "../utils/pdfParser";
+import { isContentQuizWorthy } from "../utils/isContentQuizWorthy";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import BackButton from "../components/BackButton";
 
@@ -29,8 +30,8 @@ const Upload: React.FC = () => {
   const handleUpload = async () => {
     setMessage("");
 
-    if (!file || !user || !topic || !deadline) {
-      setMessage("Please fill in all fields and select a file.");
+    if (!file || !user || !topic.trim() || !deadline.trim()) {
+      setMessage("Please fill in all fields and select a PDF file.");
       return;
     }
 
@@ -39,20 +40,32 @@ const Upload: React.FC = () => {
       return;
     }
 
+    if (file.type !== "application/pdf" || !file.name.endsWith(".pdf")) {
+      setMessage("Only valid PDF files are allowed.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Extract text from PDF
       const extractedText = await extractTextFromPDF(file);
 
-      // Upload file to Firebase Storage
+      const { isQuizWorthy, confidenceScore, reasons } = isContentQuizWorthy(extractedText);
+
+      if (!isQuizWorthy) {
+        setMessage(
+          `This file is not valid.\nReasons: ${reasons.join(" ")}\nConfidence: ${confidenceScore}`
+        );
+        setLoading(false);
+        return;
+      }
+
       const storageRef = ref(storage, `uploads/${user.uid}/${file.name}`);
       await uploadBytes(storageRef, file);
 
-      // Store metadata + extracted content in Firestore
       await addDoc(collection(db, "study_materials"), {
         uid: user.uid,
-        topic,
+        topic: topic.trim(),
         deadline: Timestamp.fromDate(new Date(deadline)),
         fileName: file.name,
         uploadedAt: Timestamp.now(),
@@ -150,15 +163,16 @@ const Upload: React.FC = () => {
             type="file"
             accept=".pdf"
             onChange={(e) => {
-              const selected = e.target.files?.[0];
+              const selected = e.target.files?.[0] || null;
+              setFile(selected);
               if (
                 selected &&
                 selected.size > MAX_FILE_SIZE_MB * 1024 * 1024
               ) {
                 setMessage(`File too large. Max size is ${MAX_FILE_SIZE_MB}MB.`);
-                return;
+              } else {
+                setMessage("");
               }
-              setFile(selected || null);
             }}
             style={{
               color: "#fff",
@@ -196,6 +210,7 @@ const Upload: React.FC = () => {
             sx={{
               mt: 1,
               color: message.includes("successful") ? "#4ade80" : "#f87171",
+              whiteSpace: "pre-wrap",
             }}
           >
             {message}

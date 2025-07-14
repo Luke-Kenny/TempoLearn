@@ -115,8 +115,8 @@ const MyMaterials: React.FC = () => {
         }));
         return;
       }
-
-      navigate("/quiz", { state: { quizData: parsedQuiz } });
+      // Passing materialId when navigating to the quiz, for saving results
+      navigate("/quiz", { state: { quizData: parsedQuiz, materialId: material.id } });
     } catch (error: any) {
       console.error("Quiz generation error:", error);
       setErrorMessages((prev) => ({

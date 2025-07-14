@@ -12,6 +12,9 @@ import {
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+
+import { useAuth } from "../context/AuthContext";
+import { saveQuizAttempt } from "../utils/saveQuizAttempt";
 import BackButton from "../components/BackButton";
 
 interface Question {
@@ -22,12 +25,15 @@ interface Question {
 
 interface LocationState {
   quizData: Question[];
+  materialId: string;
 }
 
 const QuizPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const quizData = (location.state as LocationState)?.quizData || [];
+  const { user } = useAuth();
+
+  const { quizData, materialId } = location.state as LocationState;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -37,14 +43,14 @@ const QuizPage: React.FC = () => {
   const [showAnswerResult, setShowAnswerResult] = useState(false);
 
   useEffect(() => {
-    if (!quizData.length) {
+    if (!quizData?.length || !materialId) {
       navigate("/mymaterials");
     }
-  }, [quizData, navigate]);
+  }, [quizData, materialId, navigate]);
 
   const currentQuestion = quizData[currentIndex];
 
-  const handleSelect = (value: string) => {
+  const handleSelect = async (value: string) => {
     setSelectedAnswer(value);
     setShowAnswerResult(true);
 
@@ -52,13 +58,29 @@ const QuizPage: React.FC = () => {
     if (isCorrect) setScore((prev) => prev + 1);
     setAnswers((prev) => [...prev, value]);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (currentIndex + 1 < quizData.length) {
         setCurrentIndex((prev) => prev + 1);
         setSelectedAnswer(null);
         setShowAnswerResult(false);
       } else {
         setSubmitted(true);
+
+        if (user) {
+          const finalScore = isCorrect ? score + 1 : score;
+          const finalAnswers = [...answers, value];
+          const percentage = Math.round((finalScore / quizData.length) * 100);
+
+          await saveQuizAttempt({
+            uid: user.uid,
+            materialId,
+            score: finalScore,
+            total: quizData.length,
+            percentage,
+            answers: finalAnswers,
+            quizData,
+          });
+        }
       }
     }, 1000);
   };
@@ -98,7 +120,7 @@ const QuizPage: React.FC = () => {
         {submitted ? (
           <>
             <Typography variant="h4" textAlign="center" gutterBottom>
-              🎉 Quiz Complete!
+               Quiz Complete!
             </Typography>
             <Typography variant="h6" textAlign="center" mb={3}>
               Score: {score} / {quizData.length} (
