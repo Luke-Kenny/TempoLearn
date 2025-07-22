@@ -17,10 +17,11 @@ import dayjs from "dayjs";
 import { db, storage } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
+import BackButton from "../components/BackButton";
+import DifficultyDialog from "../components/DifficultyDialog";
 
 import { extractTextFromPDF } from "../utils/pdfParser";
 import { isContentQuizWorthy } from "../utils/isContentQuizWorthy";
-import BackButton from "../components/BackButton";
 
 interface Material {
   id: string;
@@ -41,20 +42,23 @@ const MyMaterials: React.FC = () => {
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({});
   const [snackOpen, setSnackOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      if (!user) return;
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("mixed");
 
+  // Fetch user materials
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchMaterials = async () => {
       try {
-        const q = query(
-          collection(db, "study_materials"),
-          where("uid", "==", user.uid)
-        );
-        const querySnapshot = await getDocs(q);
-        const fetched: Material[] = [];
-        querySnapshot.forEach((doc) => {
-          fetched.push({ id: doc.id, ...doc.data() } as Material);
-        });
+        const q = query(collection(db, "study_materials"), where("uid", "==", user.uid));
+        const snapshot = await getDocs(q);
+        const fetched: Material[] = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Material[];
+
         setMaterials(fetched);
       } catch (error) {
         console.error("Failed to fetch materials:", error);
@@ -66,8 +70,17 @@ const MyMaterials: React.FC = () => {
     fetchMaterials();
   }, [user]);
 
-  const handleGenerateQuiz = async (material: Material) => {
-    if (!user) return;
+  const openDifficultyDialog = (material: Material) => {
+    setSelectedMaterial(material);
+    setSelectedDifficulty("mixed");
+    setDialogOpen(true);
+  };
+
+  const handleGenerateQuiz = async () => {
+    if (!user || !selectedMaterial) return;
+
+    const material = selectedMaterial;
+    setDialogOpen(false);
     setQuizLoadingId(material.id);
     setErrorMessages((prev) => ({ ...prev, [material.id]: "" }));
 
@@ -88,34 +101,18 @@ const MyMaterials: React.FC = () => {
         return;
       }
 
-      const quizRes = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/quiz`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: text }),
-        }
-      );
+      const quizRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/quiz`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text, difficulty: selectedDifficulty }),
+      });
 
       const data = await quizRes.json();
+      if (!quizRes.ok) throw new Error(data.message || "Quiz generation failed.");
 
-      if (!quizRes.ok) {
-        throw new Error(data.message || "Quiz generation failed.");
-      }
+      const parsedQuiz =
+        typeof data.quiz === "string" ? JSON.parse(data.quiz) : data.quiz;
 
-      let parsedQuiz;
-      try {
-        parsedQuiz =
-          typeof data.quiz === "string" ? JSON.parse(data.quiz) : data.quiz;
-      } catch (e) {
-        console.error("Failed to parse quiz JSON:", data.quiz);
-        setErrorMessages((prev) => ({
-          ...prev,
-          [material.id]: "The quiz format returned was invalid.",
-        }));
-        return;
-      }
-      // Passing materialId when navigating to the quiz, for saving results
       navigate("/quiz", { state: { quizData: parsedQuiz, materialId: material.id } });
     } catch (error: any) {
       console.error("Quiz generation error:", error);
@@ -173,12 +170,10 @@ const MyMaterials: React.FC = () => {
                 File: {item.fileName}
               </Typography>
               <Typography variant="body2" color="#cbd5e1">
-                Deadline:{" "}
-                {dayjs(item.deadline?.toDate()).format("DD MMM YYYY, HH:mm")}
+                Deadline: {dayjs(item.deadline?.toDate()).format("DD MMM YYYY, HH:mm")}
               </Typography>
               <Typography variant="body2" color="#cbd5e1" mb={2}>
-                Uploaded:{" "}
-                {dayjs(item.uploadedAt?.toDate()).format("DD MMM YYYY, HH:mm")}
+                Uploaded: {dayjs(item.uploadedAt?.toDate()).format("DD MMM YYYY, HH:mm")}
               </Typography>
 
               {item.textContent && (
@@ -207,7 +202,7 @@ const MyMaterials: React.FC = () => {
                 <Button
                   variant="contained"
                   size="small"
-                  onClick={() => handleGenerateQuiz(item)}
+                  onClick={() => openDifficultyDialog(item)}
                   disabled={quizLoadingId === item.id}
                   sx={{
                     backgroundColor: "#3b82f6",
@@ -253,6 +248,15 @@ const MyMaterials: React.FC = () => {
           {quizLoadingId ? "Generating quiz..." : "Quiz ready or error handled."}
         </Alert>
       </Snackbar>
+
+      <DifficultyDialog
+        open={dialogOpen}
+        difficulty={selectedDifficulty}
+        onSelect={(val) => setSelectedDifficulty(val)}
+        onClose={() => setDialogOpen(false)}
+        onConfirm={handleGenerateQuiz}
+      />
+
       <BackButton />
     </Box>
   );

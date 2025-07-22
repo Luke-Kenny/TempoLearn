@@ -1,62 +1,108 @@
 import { OpenAI } from "openai";
 
+// Initializing my OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-/**
- * Generating a MCQ from study content.
- * Enforces strict JSON structure and validates each question object.
- */
+// Defines the expected question structure
+export type QuizQuestion = {
+  type: "mcq" | "true_false" | "cloze" | "short_answer";
+  question: string;
+  answer: string | boolean;
+  difficulty: "easy" | "medium" | "hard";
+  cognitive_level:
+    | "remember"
+    | "understand"
+    | "apply"
+    | "analyze"
+    | "evaluate"
+    | "create";
+  explanation?: string;
+  options?: string[]; // Only for MCQs
+};
+
+// Runtime validation for each question
+function isValidQuestion(obj: any): obj is QuizQuestion {
+  const baseCheck =
+    typeof obj.question === "string" &&
+    ["easy", "medium", "hard"].includes(obj.difficulty) &&
+    [
+      "remember",
+      "understand",
+      "apply",
+      "analyze",
+      "evaluate",
+      "create",
+    ].includes(obj.cognitive_level) &&
+    ["mcq", "true_false", "cloze", "short_answer"].includes(obj.type);
+
+  if (!baseCheck) return false;
+
+  if (obj.type === "mcq") {
+    return (
+      Array.isArray(obj.options) &&
+      obj.options.length === 4 &&
+      obj.options.every((opt: string) => typeof opt === "string") &&
+      typeof obj.answer === "string" &&
+      obj.options.includes(obj.answer)
+    );
+  }
+
+  if (obj.type === "true_false") {
+    return typeof obj.answer === "boolean";
+  }
+
+  return typeof obj.answer === "string";
+}
+
+// Difficulty-to-question-type mapping
+const typeMap = {
+  easy: ["mcq", "true_false"],
+  medium: ["mcq", "true_false", "cloze"],
+  hard: ["mcq", "cloze", "short_answer"],
+};
+
+// Main quiz generation function
 export const generateQuiz = async (
-  content: string
-): Promise<
-  {
-    question: string;
-    options: string[];
-    answer: string;
-  }[]
-> => {
+  content: string,
+  difficulty: "easy" | "medium" | "hard" = "medium"
+): Promise<QuizQuestion[]> => {
   if (!content || content.length < 100) {
     throw new Error("Provided content is insufficient for quiz generation.");
   }
 
- const prompt = `
-You are an AI-powered quiz generation engine designed to analyze academic content and generate multiple-choice questions that test conceptual understanding.
+  const allowedTypes = typeMap[difficulty];
+
+  const prompt = `
+You are an AI quiz engine. Given academic content, generate a diagnostic quiz to assess conceptual understanding.
 
 TASK:
-From the academic text provided below, generate exactly **3 multiple-choice questions** in a single **JSON array**. The questions must focus on higher-order thinking — such as comprehension, application, causation, distinction, or implication — not mere fact recall.
+- Generate 5 to 7 questions.
+- Use only the following question types (based on difficulty level "${difficulty}"): ${allowedTypes.join(", ")}
 
-REQUIRED OUTPUT STRUCTURE:
-Return only a valid JSON array like this (NO markdown, code blocks, extra text, or comments):
+QUESTION TYPES:
+- "mcq": Multiple-choice with exactly 4 options. One of them must be the correct answer.
+- "true_false": True or false.
+- "cloze": Fill-in-the-blank.
+- "short_answer": Brief open-ended response.
 
-[
-  {
-    "question": "What is the main purpose of X?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "answer": "Option B"
-  },
-  ...
-]
+EACH QUESTION MUST INCLUDE:
+- "type": one of: ${allowedTypes.join(", ")}
+- "question": the question text
+- "answer": correct answer (string or boolean)
+- "difficulty": "easy", "medium", or "hard"
+- "cognitive_level": "remember", "understand", "apply", "analyze", "evaluate", or "create"
+- Optional: "options": for "mcq" only (must be exactly 4 strings and must include the correct answer)
+- Optional: "explanation": a short explanation for the answer
 
-STRICT RULES:
-- Return exactly 3 question objects inside ONE array.
-- Each object must have:
-  - "question": a clear and concise question string.
-  - "options": an array of 4 unique and plausible string options.
-  - "answer": a string that matches EXACTLY one of the options.
-- Do not use formatting, symbols, or explain anything. Only return the JSON.
-- Ensure option and answer values are **textually identical**. (e.g., if the answer is "Transparency", that exact string must appear in options).
-- Do not include instructions, intro text, or annotations of any kind — just the raw array.
+IMPORTANT:
+Return only the JSON array. No extra text, markdown, or comments.
 
-STUDY MATERIAL TO ANALYZE:
+CONTENT:
 """
 ${content}
-"""
-`;
-
-
-
+"""`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -66,46 +112,38 @@ ${content}
     });
 
     const raw = completion.choices?.[0]?.message?.content?.trim();
-    if (!raw) {
-      throw new Error("Empty response received from OpenAI.");
-    }
+    if (!raw) throw new Error("OpenAI returned an empty response.");
 
     console.log("Raw OpenAI Output:\n", raw);
 
-    // sanitizing: extracting only the first JSON array block
     const jsonStart = raw.indexOf("[");
     const jsonEnd = raw.lastIndexOf("]");
     if (jsonStart === -1 || jsonEnd === -1) {
-      throw new Error("OpenAI response did not contain a valid JSON array.");
+      throw new Error("Response did not contain a valid JSON array.");
     }
 
     const cleaned = raw.slice(jsonStart, jsonEnd + 1);
-    let quiz;
+    let parsed: any;
 
     try {
-      quiz = JSON.parse(cleaned);
-    } catch (parseErr) {
-      console.error("Failed to parse sanitized JSON:\n", cleaned);
-      throw new Error("Failed to parse quiz data. Invalid JSON format.");
+      parsed = JSON.parse(cleaned);
+    } catch (err) {
+      console.error("Failed to parse OpenAI JSON:\n", cleaned);
+      throw new Error("Quiz JSON could not be parsed.");
     }
 
-    if (!Array.isArray(quiz) || quiz.length !== 3) {
-      throw new Error("Quiz must contain exactly 3 questions.");
+    if (!Array.isArray(parsed) || parsed.length < 5 || parsed.length > 7) {
+      throw new Error("Quiz must contain 5 to 7 questions.");
     }
 
-    for (const q of quiz) {
-      if (
-        typeof q.question !== "string" ||
-        !Array.isArray(q.options) ||
-        q.options.length !== 4 ||
-        typeof q.answer !== "string" ||
-        !q.options.includes(q.answer)
-      ) {
-        throw new Error("Invalid question format or missing fields.");
+    for (let i = 0; i < parsed.length; i++) {
+      if (!isValidQuestion(parsed[i])) {
+        console.error("Invalid question format at index", i, ":", parsed[i]);
+        throw new Error(`Question ${i + 1} failed validation.`);
       }
     }
 
-    return quiz;
+    return parsed;
   } catch (err: any) {
     console.error("Quiz generation error:", err.message || err);
     throw new Error("Quiz generation failed. Please try again.");
