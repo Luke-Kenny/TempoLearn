@@ -15,6 +15,7 @@ import { extractTextFromPDF } from "../utils/pdfParser";
 import { isContentQuizWorthy } from "../utils/isContentQuizWorthy";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import BackButton from "../components/BackButton";
+import { postCustomNotes } from "../routes/postCustomNotes";
 
 const MAX_FILE_SIZE_MB = 5;
 
@@ -40,45 +41,60 @@ const Upload: React.FC = () => {
       return;
     }
 
-    if (file.type !== "application/pdf" || !file.name.endsWith(".pdf")) {
-      setMessage("Only valid PDF files are allowed.");
+    if (file.type !== "application/pdf") {
+      setMessage("Only PDF files are allowed.");
       return;
     }
 
     setLoading(true);
 
     try {
+      // 1. Extract text from PDF
       const extractedText = await extractTextFromPDF(file);
 
-      const { isQuizWorthy, confidenceScore, reasons } = isContentQuizWorthy(extractedText);
+      // 2. Check quiz-worthiness
+      const { isQuizWorthy, confidenceScore, reasons } =
+        isContentQuizWorthy(extractedText);
 
       if (!isQuizWorthy) {
         setMessage(
-          `This file is not valid.\nReasons: ${reasons.join(" ")}\nConfidence: ${confidenceScore}`
+          `This file is not quiz-worthy.\nReasons: ${reasons.join(" ")}\nConfidence: ${confidenceScore}`
         );
         setLoading(false);
         return;
       }
 
+      // 3. Upload file to Firebase Storage
       const storageRef = ref(storage, `uploads/${user.uid}/${file.name}`);
       await uploadBytes(storageRef, file);
 
-      await addDoc(collection(db, "study_materials"), {
+      // 4. Save study material metadata to Firestore
+      const docRef = await addDoc(collection(db, "study_materials"), {
         uid: user.uid,
         topic: topic.trim(),
-        deadline: Timestamp.fromDate(new Date(deadline)),
         fileName: file.name,
+        deadline: Timestamp.fromDate(new Date(deadline)),
         uploadedAt: Timestamp.now(),
-        textContent: extractedText,
       });
 
-      setMessage("Upload successful!");
+      // 5. Trigger custom notes generation
+      try {
+        await postCustomNotes({
+          uid: user.uid,
+          materialId: docRef.id,
+          parsedText: extractedText,
+        });
+      } catch (err) {
+        console.warn("Note generation failed:", err);
+      }
+
+      setMessage("Upload successful! Notes are being generated.");
       setFile(null);
       setTopic("");
       setDeadline("");
     } catch (err) {
       console.error("Upload error:", err);
-      setMessage("Upload failed. Please try again later.");
+      setMessage("Upload failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -143,17 +159,12 @@ const Upload: React.FC = () => {
           value={deadline}
           onChange={(e) => setDeadline(e.target.value)}
           sx={{ mb: 3 }}
-          InputLabelProps={{
-            shrink: true,
-            style: { color: "#ccc" },
-          }}
+          InputLabelProps={{ shrink: true, style: { color: "#ccc" } }}
           InputProps={{
             sx: {
               color: "#fff",
               "& input": { color: "#fff" },
-              "& .MuiSvgIcon-root": {
-                color: "#fff",
-              },
+              "& .MuiSvgIcon-root": { color: "#fff" },
             },
           }}
         />

@@ -1,15 +1,15 @@
 import { db } from "../firebase/firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-interface QuizQuestion {
-  type: "mcq" | "true_false" | "cloze" | "short_answer";
-  question: string;
-  options?: string[];
-  answer: string | boolean;
-  difficulty: "easy" | "medium" | "hard";
-  cognitive_level: string;
-  explanation?: string;
-}
+// interface QuizQuestion {
+//   type: "mcq" | "true_false" | "cloze" | "short_answer";
+//   question: string;
+//   options?: string[];
+//   answer: string | boolean;
+//   difficulty: "easy" | "medium" | "hard";
+//   cognitive_level: string;
+//   explanation?: string;
+// }
 
 interface AnswerDetail {
   question: string;

@@ -32,11 +32,19 @@ interface Material {
   textContent?: string;
 }
 
+interface CustomNotes {
+  summary: string;
+  keyConcepts: string[];
+  visualSuggestions: string[];
+  notableInsights: string[];
+}
+
 const MyMaterials: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [customNotesMap, setCustomNotesMap] = useState<Record<string, CustomNotes>>({});
   const [loading, setLoading] = useState(true);
   const [quizLoadingId, setQuizLoadingId] = useState<string | null>(null);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({});
@@ -46,7 +54,6 @@ const MyMaterials: React.FC = () => {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("mixed");
 
-  // Fetch user materials
   useEffect(() => {
     if (!user) return;
 
@@ -60,8 +67,20 @@ const MyMaterials: React.FC = () => {
         })) as Material[];
 
         setMaterials(fetched);
+
+        const notesSnapshot = await getDocs(
+          query(collection(db, "custom_notes"), where("uid", "==", user.uid))
+        );
+
+        const notesMap: Record<string, CustomNotes> = {};
+        notesSnapshot.forEach((doc) => {
+          const { notes } = doc.data();
+          notesMap[doc.id] = notes;
+        });
+
+        setCustomNotesMap(notesMap);
       } catch (error) {
-        console.error("Failed to fetch materials:", error);
+        console.error("Failed to fetch materials or notes:", error);
       } finally {
         setLoading(false);
       }
@@ -110,9 +129,7 @@ const MyMaterials: React.FC = () => {
       const data = await quizRes.json();
       if (!quizRes.ok) throw new Error(data.message || "Quiz generation failed.");
 
-      const parsedQuiz =
-        typeof data.quiz === "string" ? JSON.parse(data.quiz) : data.quiz;
-
+      const parsedQuiz = typeof data.quiz === "string" ? JSON.parse(data.quiz) : data.quiz;
       navigate("/quiz", { state: { quizData: parsedQuiz, materialId: material.id } });
     } catch (error: any) {
       console.error("Quiz generation error:", error);
@@ -130,16 +147,8 @@ const MyMaterials: React.FC = () => {
     <Box sx={{ backgroundColor: "#0f172a", minHeight: "100vh", pb: 6 }}>
       <ResponsiveAppBar />
       <Box sx={{ maxWidth: 900, mx: "auto", pt: 12, px: 3 }}>
-        <Typography
-          variant="h4"
-          sx={{
-            color: "#ffffff",
-            fontWeight: 600,
-            mb: 4,
-            textAlign: "center",
-          }}
-        >
-          Your Uploaded Study Materials
+        <Typography variant="h4" sx={{ color: "#ffffff", fontWeight: 600, mb: 4, textAlign: "center" }}>
+          Your Study Materials
         </Typography>
 
         {loading ? (
@@ -155,48 +164,12 @@ const MyMaterials: React.FC = () => {
             <Paper
               key={item.id}
               elevation={5}
-              sx={{
-                backgroundColor: "#1e293b",
-                color: "#f1f5f9",
-                p: 3,
-                mb: 3,
-                borderRadius: 3,
-              }}
+              sx={{ backgroundColor: "#1e293b", color: "#f1f5f9", p: 3, mb: 3, borderRadius: 3 }}
             >
-              <Typography variant="h6" fontWeight={600}>
-                {item.topic}
-              </Typography>
-              <Typography variant="body2" color="#cbd5e1" mb={1}>
-                File: {item.fileName}
-              </Typography>
-              <Typography variant="body2" color="#cbd5e1">
-                Deadline: {dayjs(item.deadline?.toDate()).format("DD MMM YYYY, HH:mm")}
-              </Typography>
-              <Typography variant="body2" color="#cbd5e1" mb={2}>
-                Uploaded: {dayjs(item.uploadedAt?.toDate()).format("DD MMM YYYY, HH:mm")}
-              </Typography>
-
-              {item.textContent && (
-                <>
-                  <Divider sx={{ my: 2, borderColor: "#334155" }} />
-                  <Typography variant="subtitle2" color="#94a3b8" mb={1}>
-                    Preview Extract:
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      backgroundColor: "#0f172a",
-                      borderRadius: 2,
-                      p: 2,
-                      color: "#e2e8f0",
-                      fontSize: "0.9rem",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {item.textContent.slice(0, 300)}...
-                  </Typography>
-                </>
-              )}
+              <Typography variant="h6" fontWeight={600}>{item.topic}</Typography>
+              <Typography variant="body2" color="#cbd5e1" mb={1}>File: {item.fileName}</Typography>
+              <Typography variant="body2" color="#cbd5e1">Deadline: {dayjs(item.deadline?.toDate()).format("DD MMM YYYY, HH:mm")}</Typography>
+              <Typography variant="body2" color="#cbd5e1" mb={2}>Uploaded: {dayjs(item.uploadedAt?.toDate()).format("DD MMM YYYY, HH:mm")}</Typography>
 
               <Box sx={{ mt: 2, textAlign: "right" }}>
                 <Button
@@ -204,32 +177,33 @@ const MyMaterials: React.FC = () => {
                   size="small"
                   onClick={() => openDifficultyDialog(item)}
                   disabled={quizLoadingId === item.id}
-                  sx={{
-                    backgroundColor: "#3b82f6",
-                    textTransform: "none",
-                    "&:hover": { backgroundColor: "#2563eb" },
-                  }}
+                  sx={{ backgroundColor: "#3b82f6", textTransform: "none", "&:hover": { backgroundColor: "#2563eb" } }}
                 >
-                  {quizLoadingId === item.id ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    "Generate Quiz"
-                  )}
+                  {quizLoadingId === item.id ? <CircularProgress size={20} color="inherit" /> : "Generate Quiz"}
                 </Button>
               </Box>
 
+              {customNotesMap[item.id] && (
+                <Box sx={{ mt: 3 }}>
+                  <Divider sx={{ my: 2, borderColor: "#334155" }} />
+                  <Typography variant="subtitle2" color="#94a3b8" mb={1}>Custom Notes</Typography>
+                  <Typography variant="body2" mb={1}><strong>Summary:</strong> {customNotesMap[item.id].summary}</Typography>
+                  <Typography variant="body2" mb={1}><strong>Key Concepts:</strong> {customNotesMap[item.id].keyConcepts.join(", ")}</Typography>
+                  <Typography variant="body2" mb={1}><strong>Visual Suggestions:</strong> {customNotesMap[item.id].visualSuggestions.join(", ")}</Typography>
+
+                  {customNotesMap[item.id]?.notableInsights?.length > 0 && (
+                    <Box mt={2}>
+                      <Typography variant="body2" fontWeight={600} mb={1}>Notable Insights:</Typography>
+                      {customNotesMap[item.id].notableInsights.map((insight, idx) => (
+                        <Typography key={idx} variant="body2" mb={1}>• {insight}</Typography>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              )}
+
               {errorMessages[item.id] && (
-                <Box
-                  sx={{
-                    mt: 2,
-                    backgroundColor: "#0f172a",
-                    borderRadius: 2,
-                    p: 2,
-                    color: "#f87171",
-                    fontSize: "0.9rem",
-                    border: "1px solid #dc2626",
-                  }}
-                >
+                <Box sx={{ mt: 2, backgroundColor: "#0f172a", borderRadius: 2, p: 2, color: "#f87171", fontSize: "0.9rem", border: "1px solid #dc2626" }}>
                   {errorMessages[item.id]}
                 </Box>
               )}

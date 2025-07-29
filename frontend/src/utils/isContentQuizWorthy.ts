@@ -1,26 +1,27 @@
 /**
- * Custom eval on whether a given academic text is suitable for quiz generation.
- * Using heuristic scoring based on structural, semantic, and lexical signals.
+ * Evaluates whether a piece of academic content is suitable for quiz generation.
+ * Uses heuristic scoring based on structure, semantics, and lexical features.
  */
 
 interface EvaluationResult {
   isQuizWorthy: boolean;
-  confidenceScore: number; // 0 to 1
+  confidenceScore: number; // 0.00 - 1.00
   reasons: string[];
   debug?: {
     wordCount: number;
     academicHits: number;
     structureHits: number;
     lexicalDensity: number;
+    disallowedHits: string[];
   };
 }
 
 export const isContentQuizWorthy = (text: string): EvaluationResult => {
-  if (typeof text !== "string" || text.trim().length === 0) {
+  if (!text || typeof text !== "string" || text.trim().length === 0) {
     return {
       isQuizWorthy: false,
       confidenceScore: 0,
-      reasons: ["Empty or invalid input."],
+      reasons: ["Input is empty or invalid."],
     };
   }
 
@@ -29,81 +30,83 @@ export const isContentQuizWorthy = (text: string): EvaluationResult => {
   const words = cleanedText.split(/\s+/);
   const wordCount = words.length;
 
-  // Blocked boilerplate/admin phrases
+  // Blocked phrases (boilerplate detection)
   const BLOCKED_PHRASES = [
-    "assignment brief", "assessment criteria", "marking rubric", "due date",
-    "turnitin", "canvas", "moodle", "student id", "submission portal",
-    "how to submit", "plagiarism", "file naming convention",
-    "this assignment", "feedback will be provided", "instructions",
-    "lorem ipsum", "contact your instructor", "page is intentionally left blank",
+    "assignment brief", "assessment criteria", "marking rubric",
+    "turnitin", "submission deadline", "file naming convention", "plagiarism policy",
+    "this page is intentionally left blank", "student id", "submission portal",
+    "how to submit", "contact your instructor", "canvas", "moodle"
   ];
-  const disallowed = BLOCKED_PHRASES.filter((phrase) =>
+  const disallowedHits = BLOCKED_PHRASES.filter((phrase) =>
     lowerText.includes(phrase)
   );
-  if (disallowed.length > 0) {
+
+  if (disallowedHits.length > 0) {
     return {
       isQuizWorthy: false,
       confidenceScore: 0,
-      reasons: [`Contains boilerplate content: "${disallowed[0]}"`],
+      reasons: [`Contains blocked instructional content: "${disallowedHits[0]}"`],
+      debug: { wordCount, academicHits: 0, structureHits: 0, lexicalDensity: 0, disallowedHits },
     };
   }
 
-  // Academic signals — cross-disciplinary
+  // Academic keywords (expanded list)
   const ACADEMIC_TERMS = [
-    "hypothesis", "methodology", "literature review", "framework", "empirical",
-    "quantitative", "qualitative", "findings", "dataset", "case study",
-    "argument", "premise", "theoretical", "variable", "analysis",
-    "evidence", "discussion", "results", "correlation", "conclusion",
-    "citation", "construct", "conceptual", "data", "inference", "observation"
+    "hypothesis", "methodology", "literature review", "framework", "empirical", "quantitative", "qualitative",
+    "findings", "dataset", "case study", "variable", "correlation", "inference", "observation", "experiment",
+    "conceptual", "analysis", "evaluation", "significance", "construct", "paradigm", "results", "evidence",
+    "discussion", "implication", "research question", "theoretical"
   ];
-  const academicHits = ACADEMIC_TERMS.filter((term) =>
-    lowerText.includes(term)
-  ).length;
+  const academicHits = ACADEMIC_TERMS.filter(term => lowerText.includes(term)).length;
 
-  // Structural cues
+  // Structural signals
   const STRUCTURE_MARKERS = [
-    "introduction", "abstract", "methods", "discussion", "references", "bibliography"
+    "abstract", "introduction", "methodology", "methods", "results", "discussion", "references", "bibliography", "conclusion"
   ];
-  const structureHits = STRUCTURE_MARKERS.filter((marker) =>
+  const structureHits = STRUCTURE_MARKERS.filter(marker =>
     lowerText.includes(marker)
   ).length;
 
-  // Lexical density = content words / total words
-  const FUNCTION_WORDS = [
-    "the", "and", "or", "but", "if", "then", "a", "an", "in", "on", "to", "of", "with", "is", "was", "be"
-  ];
-  const functionWordSet = new Set(FUNCTION_WORDS);
-  const contentWordCount = words.filter(
-    (w) => !functionWordSet.has(w.toLowerCase())
-  ).length;
-  const lexicalDensity = parseFloat((contentWordCount / wordCount).toFixed(2));
+  // Lexical Density Calculation
+  const FUNCTION_WORDS = new Set([
+    "the", "and", "or", "but", "if", "then", "a", "an", "in", "on", "to", "of", "with", "is", "was", "are", "be", "by", "this"
+  ]);
+  const contentWords = words.filter(w => !FUNCTION_WORDS.has(w.toLowerCase()));
+  const lexicalDensity = parseFloat((contentWords.length / wordCount).toFixed(2));
 
-  // Heuristic scoring
-  const lengthScore = Math.min(wordCount / 300, 1);
-  const academicScore = Math.min(academicHits / 6, 1);
+  // Heuristic Scoring
+  const lengthScore = Math.min(wordCount / 250, 1); // scale up to 250 words
+  const academicScore = Math.min(academicHits / 5, 1);
   const structureScore = Math.min(structureHits / 3, 1);
   const lexicalScore = Math.min(lexicalDensity, 1);
 
-  // Weighted scoring
-  const rawScore =
-    0.4 * academicScore +
-    0.2 * lengthScore +
-    0.2 * lexicalScore +
-    0.2 * structureScore;
+  const weightedScore = (
+    0.35 * academicScore +
+    0.25 * lexicalScore +
+    0.20 * lengthScore +
+    0.20 * structureScore
+  );
 
-  const confidenceScore = parseFloat(rawScore.toFixed(2));
-  const isQuizWorthy = confidenceScore >= 0.5;
+  const confidenceScore = parseFloat(weightedScore.toFixed(2));
+  const isQuizWorthy = confidenceScore >= 0.4;
 
+  // Reason feedback
   const reasons: string[] = [];
-  if (academicHits < 2) reasons.push("Lacks academic keywords.");
-  if (structureHits === 0) reasons.push("No academic structure indicators.");
-  if (lexicalDensity < 0.45) reasons.push("Low lexical density (too informal or functional).");
-  if (wordCount < 200) reasons.push("Short length (under 200 words).");
+  if (wordCount < 150) reasons.push("Very short content (under 150 words).");
+  if (academicHits < 2) reasons.push("Few academic keywords detected.");
+  if (structureHits === 0) reasons.push("Lacks recognizable academic structure.");
+  if (lexicalDensity < 0.4) reasons.push("Low lexical density (overly functional or casual).");
 
   return {
     isQuizWorthy,
     confidenceScore,
     reasons: isQuizWorthy ? [] : reasons,
-    debug: { wordCount, academicHits, structureHits, lexicalDensity },
+    debug: {
+      wordCount,
+      academicHits,
+      structureHits,
+      lexicalDensity,
+      disallowedHits
+    }
   };
 };
