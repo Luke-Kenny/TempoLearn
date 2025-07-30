@@ -27,15 +27,44 @@ const DifficultyDialog: React.FC<DifficultyDialogProps> = ({
   onConfirm,
 }) => {
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Select Quiz Difficulty</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          backgroundColor: "#1e293b",
+          color: "#f8fafc",
+          borderRadius: 3,
+          px: 2,
+          py: 1.5,
+        },
+      }}
+    >
+      <DialogTitle sx={{ color: "#f8fafc", fontWeight: 600 }}>
+        Select Quiz Difficulty
+      </DialogTitle>
+
       <DialogContent>
         <FormControl fullWidth sx={{ mt: 2 }}>
-          <InputLabel>Difficulty</InputLabel>
+          <InputLabel sx={{ color: "#cbd5e1" }}>Difficulty</InputLabel>
           <Select
             value={difficulty}
             label="Difficulty"
             onChange={(e) => onSelect(e.target.value)}
+            sx={{
+              color: "#f8fafc",
+              "& .MuiSelect-icon": { color: "#f8fafc" },
+              "& fieldset": { borderColor: "#334155" },
+              "&:hover fieldset": { borderColor: "#3b82f6" },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  backgroundColor: "#1e293b",
+                  color: "#f8fafc",
+                },
+              },
+            }}
           >
             <MenuItem value="mixed">Mixed</MenuItem>
             <MenuItem value="easy">Easy</MenuItem>
@@ -44,9 +73,31 @@ const DifficultyDialog: React.FC<DifficultyDialogProps> = ({
           </Select>
         </FormControl>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={onConfirm} variant="contained">
+
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button
+          onClick={onClose}
+          sx={{
+            color: "#cbd5e1",
+            textTransform: "none",
+            fontWeight: 500,
+          }}
+        >
+          Cancel
+        </Button>
+
+        <Button
+          onClick={onConfirm}
+          variant="contained"
+          sx={{
+            backgroundColor: "#3b82f6",
+            textTransform: "none",
+            fontWeight: 600,
+            "&:hover": {
+              backgroundColor: "#2563eb",
+            },
+          }}
+        >
           Continue
         </Button>
       </DialogActions>

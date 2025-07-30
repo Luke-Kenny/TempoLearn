@@ -1,5 +1,3 @@
-// src/components/BottomCta.tsx
-
 import React from "react";
 import { Box, Button, Container, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -8,45 +6,52 @@ import illustrationTempo from "../assets/illustration-tempo.jpg";
 const BottomCta: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleTryItOut = () => {
-    navigate("/signin");
-  };
-
   return (
-    <Box sx={{ py: 10, backgroundColor: "#263544" }}>
+    <Box sx={{ py: { xs: 8, md: 10 }, backgroundColor: "#263544" }}>
       <Container>
         <Box
           display="flex"
           flexDirection={{ xs: "column", md: "row" }}
-          gap={{ xs: 4, md: 6 }}
           alignItems="center"
+          justifyContent="space-between"
+          gap={{ xs: 4, md: 6 }}
         >
           {/* Text Section */}
           <Box flex={1}>
             <Typography
               variant="h5"
-              fontWeight="bold"
+              fontWeight={700}
               gutterBottom
-              sx={{ color: "#ffffff" }}
+              sx={{ color: "#ffffff", fontSize: { xs: "1.4rem", md: "1.75rem" } }}
             >
-              Every class, every test — one study tool.
+              Every class, every test - one study tool.
             </Typography>
-            <Typography variant="body1" color="#bbb" gutterBottom>
-              Create flashcards, track progress, and access your study materials
+
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#cbd5e1",
+                fontSize: "1rem",
+                lineHeight: 1.65,
+                mb: 3,
+              }}
+            >
+               Create flashcards, track progress, and access your study materials
               anytime, anywhere. Empower your learning with our adaptive
               platform.
             </Typography>
+
             <Button
               variant="contained"
-              onClick={handleTryItOut}
+              onClick={() => navigate("/signin")}
               sx={{
-                mt: 2,
                 backgroundColor: "#2ecc71",
                 color: "white",
                 textTransform: "none",
                 fontWeight: 600,
-                px: 3,
-                py: 1,
+                fontSize: "1rem",
+                px: 4,
+                py: 1.3,
                 borderRadius: "999px",
                 "&:hover": { backgroundColor: "#27ae60" },
               }}
@@ -67,7 +72,7 @@ const BottomCta: React.FC = () => {
             <Box
               component="img"
               src={illustrationTempo}
-              alt="Study Illustration"
+              alt="Student using TempoLearn"
               sx={{
                 width: "100%",
                 maxWidth: "100%",

@@ -1,5 +1,3 @@
-// src/components/ResponsiveAppBar.tsx
-
 import React from "react";
 import {
   AppBar,
@@ -13,7 +11,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import SchoolIcon from "@mui/icons-material/School";
 
 const ResponsiveAppBar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -26,29 +24,31 @@ const ResponsiveAppBar: React.FC = () => {
     navigate("/signin");
   };
 
-  const hideAuthButtonsOnPaths = ["/signin", "/signup"];
-  const shouldShowAuthButton = !hideAuthButtonsOnPaths.includes(location.pathname);
+  const hideAuthButtonsOnPaths = ["/", "/signin", "/signup"]; 
+  const shouldShowAuthButton =
+    !loading && !hideAuthButtonsOnPaths.includes(location.pathname); 
 
   return (
     <AppBar
       position="fixed"
       elevation={0}
       sx={{
-        backgroundColor: "#14181c", // darker to match hero/feature blend
+        backgroundColor: "#14181c",
         color: "#ffffff",
         borderBottom: "1px solid #2a2a2a",
+        zIndex: 1300,
       }}
     >
       <Toolbar
         disableGutters
         sx={{
-          px: 3,
+          px: { xs: 2, sm: 3 },
           minHeight: 64,
           display: "flex",
           alignItems: "center",
         }}
       >
-        {/* Logo and Brand Name */}
+        {/* Logo */}
         <Box
           display="flex"
           alignItems="center"
@@ -63,22 +63,21 @@ const ResponsiveAppBar: React.FC = () => {
               fontWeight: 600,
               fontSize: "1.3rem",
               fontFamily: "'Inter', sans-serif",
+              letterSpacing: 0.4,
               color: "#ffffff",
               display: "inline-flex",
               alignItems: "center",
             }}
           >
             Tempo
-            <Box component="span" sx={{ color: "#2ecc71" }}>
+            <Box component="span" sx={{ color: "#2ecc71", ml: 0.5 }}>
               Learn
             </Box>
           </Typography>
         </Box>
 
-        {/* Push button to the right */}
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* Conditionally render Sign In or Logout */}
         {shouldShowAuthButton && (
           <Button
             onClick={user ? handleLogout : handleSignIn}
@@ -87,13 +86,13 @@ const ResponsiveAppBar: React.FC = () => {
               backgroundColor: "#2ecc71",
               color: "#fff",
               textTransform: "none",
-              fontWeight: 500,
-              borderRadius: "6px", // small, subtle rounding
-              px: 2.2,
-              py: 0.5,
+              fontWeight: 600,
               fontSize: "0.85rem",
-              minHeight: "32px",
-              boxShadow: "none",
+              borderRadius: "999px",
+              px: 2.5,
+              py: 0.6,
+              minHeight: "34px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
               "&:hover": {
                 backgroundColor: "#27ae60",
               },
@@ -106,5 +105,6 @@ const ResponsiveAppBar: React.FC = () => {
     </AppBar>
   );
 };
+
 
 export default ResponsiveAppBar;

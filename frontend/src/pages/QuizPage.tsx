@@ -101,10 +101,10 @@ const QuizPage: React.FC = () => {
             })),
           });
 
-          setShowEmotionDialog(true); // Triggers EmotionLogger after submission
+          setShowEmotionDialog(true);
         }
       }
-    }, 1000);
+    }, 800);
   };
 
   const handleShortAnswerSubmit = () => {
@@ -124,14 +124,46 @@ const QuizPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: "#0f172a", minHeight: "100vh", py: 10, px: 2, display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <Paper elevation={6} sx={{ backgroundColor: "#1e293b", color: "#f8fafc", borderRadius: 4, p: 4, maxWidth: 720, width: "100%" }}>
+    <Box
+      sx={{
+        backgroundColor: "#0f2027",
+        minHeight: "100vh",
+        py: 10,
+        px: 2,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "start",
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{
+          backgroundColor: "#18232f",
+          color: "#f8fafc",
+          borderRadius: 4,
+          p: { xs: 3, sm: 4 },
+          maxWidth: 720,
+          width: "100%",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+        }}
+      >
         {submitted ? (
           <>
-            <Typography variant="h4" textAlign="center" gutterBottom>
+            <Typography
+              variant="h4"
+              textAlign="center"
+              gutterBottom
+              sx={{ fontWeight: 700 }}
+            >
               Quiz Complete!
             </Typography>
-            <Typography variant="h6" textAlign="center" mb={3}>
+
+            <Typography
+              variant="h6"
+              textAlign="center"
+              mb={3}
+              sx={{ color: "#2ecc71", fontWeight: 600 }}
+            >
               Score: {score} / {quizData.length} ({Math.round((score / quizData.length) * 100)}%)
             </Typography>
 
@@ -143,7 +175,7 @@ const QuizPage: React.FC = () => {
               />
             )}
 
-            <Divider sx={{ mb: 3, mt: 3, borderColor: "#334155" }} />
+            <Divider sx={{ my: 3, borderColor: "#334155" }} />
 
             {quizData.map((q, idx) => {
               const userAnswer = answers[idx];
@@ -153,7 +185,11 @@ const QuizPage: React.FC = () => {
                   <Typography variant="subtitle1" fontWeight={600}>
                     Q{idx + 1}: {q.question}
                   </Typography>
-                  <Typography variant="body2" fontWeight={500} sx={{ color: isCorrect ? "#22c55e" : "#ef4444" }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={500}
+                    sx={{ color: isCorrect ? "#22c55e" : "#ef4444" }}
+                  >
                     Your Answer: {String(userAnswer)}
                   </Typography>
                   {!isCorrect && (
@@ -174,7 +210,13 @@ const QuizPage: React.FC = () => {
               fullWidth
               variant="contained"
               onClick={handleRestart}
-              sx={{ mt: 4, backgroundColor: "#3b82f6", "&:hover": { backgroundColor: "#2563eb" } }}
+              sx={{
+                mt: 4,
+                backgroundColor: "#3b82f6",
+                "&:hover": { backgroundColor: "#2563eb" },
+                textTransform: "none",
+                fontWeight: 600,
+              }}
             >
               Retake Quiz
             </Button>
@@ -185,20 +227,36 @@ const QuizPage: React.FC = () => {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
-              initial={{ opacity: 0, x: 100 }}
+              initial={{ opacity: 0, x: 80 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, x: -80 }}
+              transition={{ duration: 0.4 }}
             >
-              <Typography variant="h6" mb={2}>
+              <Typography variant="h6" mb={2} sx={{ fontWeight: 600 }}>
                 Question {currentIndex + 1} of {quizData.length}
               </Typography>
+
               <LinearProgress
                 variant="determinate"
                 value={((currentIndex + 1) / quizData.length) * 100}
-                sx={{ mb: 3, backgroundColor: "#334155", "& .MuiLinearProgress-bar": { backgroundColor: "#3b82f6" } }}
+                sx={{
+                  mb: 3,
+                  backgroundColor: "#334155",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor: "#3b82f6",
+                  },
+                }}
               />
-              <Typography variant="body1" sx={{ mb: 2, fontSize: "1.15rem", fontWeight: 500 }}>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 2,
+                  fontSize: "1.15rem",
+                  fontWeight: 500,
+                  lineHeight: 1.6,
+                }}
+              >
                 {currentQuestion?.question}
               </Typography>
 
@@ -221,7 +279,11 @@ const QuizPage: React.FC = () => {
                             sx={{
                               color: "#3b82f6",
                               "&.Mui-checked": {
-                                color: isCorrect ? "#22c55e" : isSelected ? "#ef4444" : "#3b82f6",
+                                color: isCorrect
+                                  ? "#22c55e"
+                                  : isSelected
+                                  ? "#ef4444"
+                                  : "#3b82f6",
                               },
                             }}
                           />
@@ -267,7 +329,12 @@ const QuizPage: React.FC = () => {
                                 ? "#14532d"
                                 : "#7f1d1d"
                               : "transparent",
-                          "&:hover": { backgroundColor: "#1e40af" },
+                          "&:hover": {
+                            backgroundColor: "#1e40af",
+                          },
+                          fontWeight: 500,
+                          px: 3,
+                          py: 1,
                         }}
                       >
                         {val}
@@ -284,13 +351,22 @@ const QuizPage: React.FC = () => {
                     placeholder="Type your answer"
                     value={shortAnswerText}
                     onChange={(e) => setShortAnswerText(e.target.value)}
-                    sx={{ backgroundColor: "#fff", borderRadius: 2, mb: 2 }}
+                    sx={{
+                      backgroundColor: "#f8fafc",
+                      borderRadius: 2,
+                      mb: 2,
+                      input: { color: "#0f172a" },
+                    }}
                   />
                   <Button
                     variant="contained"
                     onClick={handleShortAnswerSubmit}
                     disabled={showAnswerResult || !shortAnswerText.trim()}
-                    sx={{ backgroundColor: "#3b82f6", "&:hover": { backgroundColor: "#2563eb" } }}
+                    sx={{
+                      backgroundColor: "#3b82f6",
+                      "&:hover": { backgroundColor: "#2563eb" },
+                      fontWeight: 600,
+                    }}
                   >
                     Submit Answer
                   </Button>

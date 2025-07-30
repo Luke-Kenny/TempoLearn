@@ -13,13 +13,13 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { getDownloadURL, ref } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import { motion } from "framer-motion";
 
 import { db, storage } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import BackButton from "../components/BackButton";
 import DifficultyDialog from "../components/DifficultyDialog";
-
 import { extractTextFromPDF } from "../utils/pdfParser";
 import { isContentQuizWorthy } from "../utils/isContentQuizWorthy";
 
@@ -49,7 +49,6 @@ const MyMaterials: React.FC = () => {
   const [quizLoadingId, setQuizLoadingId] = useState<string | null>(null);
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({});
   const [snackOpen, setSnackOpen] = useState(false);
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("mixed");
@@ -144,12 +143,22 @@ const MyMaterials: React.FC = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: "#0f172a", minHeight: "100vh", pb: 6 }}>
+    <Box sx={{ backgroundColor: "#0f2027", minHeight: "100vh", pb: 6 }}>
       <ResponsiveAppBar />
       <Box sx={{ maxWidth: 900, mx: "auto", pt: 12, px: 3 }}>
-        <Typography variant="h4" sx={{ color: "#ffffff", fontWeight: 600, mb: 4, textAlign: "center" }}>
+        <Typography
+          variant="h4"
+          sx={{
+            color: "#f8fafc",
+            fontWeight: 700,
+            mb: 4,
+            textAlign: "center",
+          }}
+        >
           Your Study Materials
         </Typography>
+
+        <BackButton />
 
         {loading ? (
           <Box display="flex" justifyContent="center" mt={6}>
@@ -160,54 +169,108 @@ const MyMaterials: React.FC = () => {
             No study materials uploaded yet.
           </Typography>
         ) : (
-          materials.map((item) => (
-            <Paper
+          materials.map((item, index) => (
+            <motion.div
               key={item.id}
-              elevation={5}
-              sx={{ backgroundColor: "#1e293b", color: "#f1f5f9", p: 3, mb: 3, borderRadius: 3 }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
             >
-              <Typography variant="h6" fontWeight={600}>{item.topic}</Typography>
-              <Typography variant="body2" color="#cbd5e1" mb={1}>File: {item.fileName}</Typography>
-              <Typography variant="body2" color="#cbd5e1">Deadline: {dayjs(item.deadline?.toDate()).format("DD MMM YYYY, HH:mm")}</Typography>
-              <Typography variant="body2" color="#cbd5e1" mb={2}>Uploaded: {dayjs(item.uploadedAt?.toDate()).format("DD MMM YYYY, HH:mm")}</Typography>
+              <Paper
+                elevation={3}
+                sx={{
+                  backgroundColor: "#18232f",
+                  border: "1px solid #334155",
+                  color: "#f1f5f9",
+                  p: 3,
+                  mb: 4,
+                  borderRadius: 3,
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
+                }}
+              >
+                <Typography variant="h6" fontWeight={600} mb={0.5}>
+                  {item.topic}
+                </Typography>
+                <Typography variant="body2" color="#94a3b8">{item.fileName}</Typography>
+                <Typography variant="body2" color="#94a3b8">
+                  Deadline: {dayjs(item.deadline?.toDate()).format("DD MMM YYYY, HH:mm")}
+                </Typography>
+                <Typography variant="body2" color="#94a3b8" mb={2}>
+                  ⬆ Uploaded: {dayjs(item.uploadedAt?.toDate()).format("DD MMM YYYY, HH:mm")}
+                </Typography>
 
-              <Box sx={{ mt: 2, textAlign: "right" }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => openDifficultyDialog(item)}
-                  disabled={quizLoadingId === item.id}
-                  sx={{ backgroundColor: "#3b82f6", textTransform: "none", "&:hover": { backgroundColor: "#2563eb" } }}
-                >
-                  {quizLoadingId === item.id ? <CircularProgress size={20} color="inherit" /> : "Generate Quiz"}
-                </Button>
-              </Box>
-
-              {customNotesMap[item.id] && (
-                <Box sx={{ mt: 3 }}>
-                  <Divider sx={{ my: 2, borderColor: "#334155" }} />
-                  <Typography variant="subtitle2" color="#94a3b8" mb={1}>Custom Notes</Typography>
-                  <Typography variant="body2" mb={1}><strong>Summary:</strong> {customNotesMap[item.id].summary}</Typography>
-                  <Typography variant="body2" mb={1}><strong>Key Concepts:</strong> {customNotesMap[item.id].keyConcepts.join(", ")}</Typography>
-                  <Typography variant="body2" mb={1}><strong>Visual Suggestions:</strong> {customNotesMap[item.id].visualSuggestions.join(", ")}</Typography>
-
-                  {customNotesMap[item.id]?.notableInsights?.length > 0 && (
-                    <Box mt={2}>
-                      <Typography variant="body2" fontWeight={600} mb={1}>Notable Insights:</Typography>
-                      {customNotesMap[item.id].notableInsights.map((insight, idx) => (
-                        <Typography key={idx} variant="body2" mb={1}>• {insight}</Typography>
-                      ))}
-                    </Box>
-                  )}
+                <Box sx={{ textAlign: "right", mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => openDifficultyDialog(item)}
+                    disabled={quizLoadingId === item.id}
+                    sx={{
+                      backgroundColor: "#3b82f6",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      px: 3,
+                      "&:hover": {
+                        backgroundColor: "#2563eb",
+                      },
+                    }}
+                  >
+                    {quizLoadingId === item.id ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      "Generate Quiz"
+                    )}
+                  </Button>
                 </Box>
-              )}
 
-              {errorMessages[item.id] && (
-                <Box sx={{ mt: 2, backgroundColor: "#0f172a", borderRadius: 2, p: 2, color: "#f87171", fontSize: "0.9rem", border: "1px solid #dc2626" }}>
-                  {errorMessages[item.id]}
-                </Box>
-              )}
-            </Paper>
+                {customNotesMap[item.id] && (
+                  <Box sx={{ mt: 3 }}>
+                    <Divider sx={{ my: 2, borderColor: "#334155" }} />
+                    <Typography variant="subtitle1" color="#2ecc71" gutterBottom>
+                      Custom Notes
+                    </Typography>
+                    <Typography variant="body2" mb={1}>
+                      <strong>Summary:</strong> {customNotesMap[item.id].summary}
+                    </Typography>
+                    <Typography variant="body2" mb={1}>
+                      <strong>Key Concepts:</strong> {customNotesMap[item.id].keyConcepts.join(", ")}
+                    </Typography>
+                    <Typography variant="body2" mb={1}>
+                      <strong>Visual Suggestions:</strong> {customNotesMap[item.id].visualSuggestions.join(", ")}
+                    </Typography>
+
+                    {customNotesMap[item.id]?.notableInsights?.length > 0 && (
+                      <Box mt={2}>
+                        <Typography variant="subtitle2" fontWeight={600} mb={1}>
+                          Notable Insights:
+                        </Typography>
+                        {customNotesMap[item.id].notableInsights.map((insight, idx) => (
+                          <Typography key={idx} variant="body2" mb={1}>
+                            • {insight}
+                          </Typography>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                {errorMessages[item.id] && (
+                  <Box
+                    sx={{
+                      mt: 2,
+                      backgroundColor: "#0f172a",
+                      borderRadius: 2,
+                      p: 2,
+                      color: "#f87171",
+                      fontSize: "0.9rem",
+                      border: "1px solid #dc2626",
+                    }}
+                  >
+                    {errorMessages[item.id]}
+                  </Box>
+                )}
+              </Paper>
+            </motion.div>
           ))
         )}
       </Box>
@@ -230,8 +293,6 @@ const MyMaterials: React.FC = () => {
         onClose={() => setDialogOpen(false)}
         onConfirm={handleGenerateQuiz}
       />
-
-      <BackButton />
     </Box>
   );
 };

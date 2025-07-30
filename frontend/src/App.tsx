@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Upload from "./pages/Upload";
 import MyMaterials from "./pages/MyMaterials";
 import QuizPage from "./pages/QuizPage";
+import Dashboard from "./pages/Dashboard";
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,7 @@ const App: React.FC = () => {
             <Route path="/tempostudy" element={<Upload />} />
             <Route path="/mymaterials" element={<MyMaterials />} />
             <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Route>
         </Routes>
       </Router>

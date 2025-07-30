@@ -19,7 +19,7 @@ interface Props {
   onClose: () => void;
   materialId?: string;
   onLogged?: (emotion: string) => void;
-  defaultEmotion?: string; // New prop to pre-fill emotion for homepage
+  defaultEmotion?: string;
 }
 
 const emotionOptions = [
@@ -98,17 +98,16 @@ const EmotionLogger: React.FC<Props> = ({
         sx: {
           backgroundColor: "#1e293b",
           color: "#f8fafc",
-          borderRadius: 4,
-          p: 3,
+          borderRadius: 3,
+          p: 2,
         },
       }}
     >
       <DialogTitle
         sx={{
-          fontWeight: 600,
+          fontWeight: 700,
           fontSize: "1.25rem",
           color: "#f8fafc",
-          mb: 1,
         }}
       >
         How do you feel about your work at the moment?
@@ -130,6 +129,7 @@ const EmotionLogger: React.FC<Props> = ({
                 "&:hover": { backgroundColor: "#2563eb" },
                 textTransform: "none",
                 fontWeight: 600,
+                borderRadius: 999,
               }}
             >
               Close
@@ -137,7 +137,7 @@ const EmotionLogger: React.FC<Props> = ({
           </Box>
         ) : (
           <>
-            <Box display="flex" flexWrap="wrap" gap={1} mb={3}>
+            <Box display="flex" flexWrap="wrap" gap={1.5} mb={3}>
               {emotionOptions.map((opt) => {
                 const selected = emotion === opt.toLowerCase();
                 return (
@@ -148,12 +148,15 @@ const EmotionLogger: React.FC<Props> = ({
                     sx={{
                       cursor: "pointer",
                       backgroundColor: selected ? "#3b82f6" : "#334155",
-                      color: selected ? "#fff" : "#f1f5f9",
+                      color: selected ? "#ffffff" : "#f1f5f9",
                       fontWeight: 500,
-                      borderRadius: "1.5rem",
+                      borderRadius: "999px",
                       px: 2,
                       py: 0.5,
-                      "&:hover": { backgroundColor: "#2563eb" },
+                      "&:hover": {
+                        backgroundColor: "#3b82f6",
+                        color: "#ffffff",
+                      },
                       transition: "0.3s",
                     }}
                   />
@@ -176,8 +179,9 @@ const EmotionLogger: React.FC<Props> = ({
                 backgroundColor: "#f8fafc",
                 borderRadius: 2,
                 mb: 2,
-                input: { color: "#0f172a" },
-                textarea: { color: "#0f172a" },
+                "& .MuiInputBase-root": {
+                  color: "#0f172a",
+                },
               }}
             />
           </>
@@ -185,10 +189,18 @@ const EmotionLogger: React.FC<Props> = ({
       </DialogContent>
 
       {!feedback && (
-        <DialogActions sx={{ justifyContent: "space-between", px: 2, pb: 2 }}>
-          <Button onClick={handleClose} sx={{ color: "#94a3b8" }}>
+        <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
+          <Button
+            onClick={handleClose}
+            sx={{
+              color: "#94a3b8",
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
             Cancel
           </Button>
+
           <Button
             variant="contained"
             onClick={handleSubmit}
@@ -198,6 +210,7 @@ const EmotionLogger: React.FC<Props> = ({
               "&:hover": { backgroundColor: "#2563eb" },
               textTransform: "none",
               fontWeight: 600,
+              borderRadius: "999px",
               minWidth: 140,
             }}
             endIcon={submitting && <CircularProgress size={18} color="inherit" />}

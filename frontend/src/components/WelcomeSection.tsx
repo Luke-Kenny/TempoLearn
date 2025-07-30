@@ -12,7 +12,14 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import EmotionLogger from "./EmotionLogger";
 
-const emotionChips = ["Confident", "Frustrated", "Tired", "Motivated", "Overwhelmed", "Focused"];
+const emotionChips = [
+  "Confident",
+  "Frustrated",
+  "Tired",
+  "Motivated",
+  "Overwhelmed",
+  "Focused",
+];
 
 const WelcomeSection: React.FC = () => {
   const { user } = useAuth();
@@ -23,6 +30,7 @@ const WelcomeSection: React.FC = () => {
 
   const handleTempoStudyClick = () => navigate("/tempostudy");
   const handleMyNotesClick = () => navigate("/mymaterials");
+  const handleDashboardClick = () => navigate("/dashboard");
 
   useEffect(() => {
     const seen = sessionStorage.getItem("emotionPromptSeen");
@@ -38,7 +46,11 @@ const WelcomeSection: React.FC = () => {
 
   return (
     <Container maxWidth="md" sx={{ pt: { xs: 18, sm: 22 }, pb: 10 }}>
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
         <Typography
           variant="h3"
           component="h1"
@@ -120,6 +132,7 @@ const WelcomeSection: React.FC = () => {
           gap: 3,
         }}
       >
+        {/* TempoStudy Button */}
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 300 }}>
           <Button
             variant="contained"
@@ -138,10 +151,11 @@ const WelcomeSection: React.FC = () => {
               },
             }}
           >
-            TempoStudy
+            Uploads
           </Button>
         </motion.div>
 
+        {/* My Notes Button */}
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 300 }}>
           <Button
             variant="outlined"
@@ -161,7 +175,31 @@ const WelcomeSection: React.FC = () => {
               },
             }}
           >
-            My Notes
+            Notes
+          </Button>
+        </motion.div>
+
+        {/* Dashboard Button */}
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 300 }}>
+          <Button
+            variant="outlined"
+            onClick={handleDashboardClick}
+            sx={{
+              color: "#ffffff",
+              borderColor: "#f59e0b",
+              textTransform: "none",
+              fontWeight: 600,
+              borderRadius: "999px",
+              px: 6,
+              py: 1.6,
+              fontSize: "1.05rem",
+              "&:hover": {
+                borderColor: "#d97706",
+                backgroundColor: "rgba(245, 158, 11, 0.1)",
+              },
+            }}
+          >
+            Dashboard
           </Button>
         </motion.div>
       </Box>
@@ -175,7 +213,7 @@ const WelcomeSection: React.FC = () => {
             setSelectedEmotion("");
           }}
           materialId={undefined}
-          defaultEmotion={selectedEmotion} 
+          defaultEmotion={selectedEmotion}
           onLogged={() => {}}
         />
       )}
