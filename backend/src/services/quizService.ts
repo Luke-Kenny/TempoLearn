@@ -1,11 +1,11 @@
 import { OpenAI } from "openai";
 
-// Initializing my OpenAI client
+// Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Defines the expected question structure
+// Question definition
 export type QuizQuestion = {
   type: "mcq" | "true_false" | "cloze" | "short_answer";
   question: string;
@@ -19,25 +19,35 @@ export type QuizQuestion = {
     | "evaluate"
     | "create";
   explanation?: string;
-  options?: string[]; // Only for MCQs
+  options?: string[]; // For MCQs
 };
 
-// Runtime validation for each question
-function isValidQuestion(obj: any): obj is QuizQuestion {
-  const baseCheck =
-    typeof obj.question === "string" &&
-    ["easy", "medium", "hard"].includes(obj.difficulty) &&
-    [
-      "remember",
-      "understand",
-      "apply",
-      "analyze",
-      "evaluate",
-      "create",
-    ].includes(obj.cognitive_level) &&
-    ["mcq", "true_false", "cloze", "short_answer"].includes(obj.type);
+// Helpers
+const normalize = (input: string) =>
+  input.trim().toLowerCase().replace(/[^\w\s]/g, "");
 
-  if (!baseCheck) return false;
+const validLevels = [
+  "remember",
+  "understand",
+  "apply",
+  "analyze",
+  "evaluate",
+  "create",
+];
+
+const coerceLevel = (level: string): QuizQuestion["cognitive_level"] | null => {
+  const normalized = level.trim().toLowerCase();
+  return validLevels.includes(normalized) ? (normalized as QuizQuestion["cognitive_level"]) : null;
+};
+
+// Runtime validation
+function isValidQuestion(obj: any): obj is QuizQuestion {
+  const typeCheck = ["mcq", "true_false", "cloze", "short_answer"].includes(obj.type);
+  const difficultyCheck = ["easy", "medium", "hard"].includes(obj.difficulty);
+  const levelCheck = validLevels.includes(obj.cognitive_level);
+  const base = typeof obj.question === "string" && difficultyCheck && levelCheck && typeCheck;
+
+  if (!base) return false;
 
   if (obj.type === "mcq") {
     return (
@@ -45,7 +55,7 @@ function isValidQuestion(obj: any): obj is QuizQuestion {
       obj.options.length === 4 &&
       obj.options.every((opt: string) => typeof opt === "string") &&
       typeof obj.answer === "string" &&
-      obj.options.includes(obj.answer)
+      obj.options.some((opt: string) => normalize(opt) === normalize(obj.answer))
     );
   }
 
@@ -56,14 +66,14 @@ function isValidQuestion(obj: any): obj is QuizQuestion {
   return typeof obj.answer === "string";
 }
 
-// Difficulty-to-question-type mapping
+// Difficulty-to-type mapping
 const typeMap = {
   easy: ["mcq", "true_false"],
   medium: ["mcq", "true_false", "cloze"],
   hard: ["mcq", "cloze", "short_answer"],
 };
 
-// Main quiz generation function
+// Quiz generator
 export const generateQuiz = async (
   content: string,
   difficulty: "easy" | "medium" | "hard" = "medium"
@@ -75,29 +85,21 @@ export const generateQuiz = async (
   const allowedTypes = typeMap[difficulty];
 
   const prompt = `
-You are an AI quiz engine. Given academic content, generate a diagnostic quiz to assess conceptual understanding.
+You are an AI quiz engine. Based on the academic content below, generate a JSON array of 5 to 7 quiz questions.
 
-TASK:
-- Generate 5 to 7 questions.
-- Use only the following question types (based on difficulty level "${difficulty}"): ${allowedTypes.join(", ")}
+Only use question types appropriate for difficulty "${difficulty}": ${allowedTypes.join(", ")}.
+Cognitive levels must be: remember, understand, apply, analyze, evaluate, create (lowercase only).
 
-QUESTION TYPES:
-- "mcq": Multiple-choice with exactly 4 options. One of them must be the correct answer.
-- "true_false": True or false.
-- "cloze": Fill-in-the-blank.
-- "short_answer": Brief open-ended response.
+Each question must include:
+- type: "mcq", "true_false", "cloze", or "short_answer"
+- question: string
+- answer: string or boolean
+- difficulty: "easy", "medium", or "hard"
+- cognitive_level: one of the six levels above
+- options: only for "mcq" (exactly 4 options including the correct one)
+- explanation: (optional)
 
-EACH QUESTION MUST INCLUDE:
-- "type": one of: ${allowedTypes.join(", ")}
-- "question": the question text
-- "answer": correct answer (string or boolean)
-- "difficulty": "easy", "medium", or "hard"
-- "cognitive_level": "remember", "understand", "apply", "analyze", "evaluate", or "create"
-- Optional: "options": for "mcq" only (must be exactly 4 strings and must include the correct answer)
-- Optional: "explanation": a short explanation for the answer
-
-IMPORTANT:
-Return only the JSON array. No extra text, markdown, or comments.
+Return only a valid **JSON array**, no markdown, no preamble, no extra text.
 
 CONTENT:
 """
@@ -136,14 +138,29 @@ ${content}
       throw new Error("Quiz must contain 5 to 7 questions.");
     }
 
+    // Fix and validate
     for (let i = 0; i < parsed.length; i++) {
-      if (!isValidQuestion(parsed[i])) {
-        console.error("Invalid question format at index", i, ":", parsed[i]);
+      const q = parsed[i];
+
+      // Normalize cognitive_level casing
+      q.cognitive_level = coerceLevel(q.cognitive_level) ?? "understand";
+
+      if (q.type === "mcq" && Array.isArray(q.options) && typeof q.answer === "string") {
+        const matched = q.options.find((opt: string) => normalize(opt) === normalize(q.answer));
+        if (matched) q.answer = matched;
+        else {
+          console.error("Invalid MCQ answer not in options at index", i, ":", q);
+          throw new Error(`Question ${i + 1} has an invalid MCQ answer.`);
+        }
+      }
+
+      if (!isValidQuestion(q)) {
+        console.error("Invalid question format at index", i, ":", q);
         throw new Error(`Question ${i + 1} failed validation.`);
       }
     }
 
-    return parsed;
+    return parsed as QuizQuestion[];
   } catch (err: any) {
     console.error("Quiz generation error:", err.message || err);
     throw new Error("Quiz generation failed. Please try again.");

@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import quizRouter from "./routes/quiz";
 import customNotesRouter from "./routes/customNotes";
+import emotionFeedbackRoute from "./routes/feedback";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -14,6 +15,8 @@ app.use(express.json());
 
 app.use("/api/quiz", quizRouter);
 app.use("/api/custom-notes", customNotesRouter);
+app.use("/api/emotion-feedback", emotionFeedbackRoute);
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

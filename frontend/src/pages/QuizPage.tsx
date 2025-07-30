@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { saveQuizAttempt } from "../utils/saveQuizAttempt";
 import BackButton from "../components/BackButton";
+import EmotionLogger from "../components/EmotionLogger";
 
 type Question = {
   type: "mcq" | "true_false" | "cloze" | "short_answer";
@@ -52,11 +53,10 @@ const QuizPage: React.FC = () => {
   const [score, setScore] = useState(0);
   const [showAnswerResult, setShowAnswerResult] = useState(false);
   const [shortAnswerText, setShortAnswerText] = useState("");
+  const [showEmotionDialog, setShowEmotionDialog] = useState(false);
 
   useEffect(() => {
-    if (!quizData?.length || !materialId) {
-      navigate("/mymaterials");
-    }
+    if (!quizData?.length || !materialId) navigate("/mymaterials");
   }, [quizData, materialId, navigate]);
 
   const currentQuestion = quizData[currentIndex];
@@ -77,7 +77,6 @@ const QuizPage: React.FC = () => {
         setShowAnswerResult(false);
       } else {
         setSubmitted(true);
-
         if (user) {
           const finalScore = isCorrect ? score + 1 : score;
           const finalAnswers = [...answers, value];
@@ -101,9 +100,16 @@ const QuizPage: React.FC = () => {
               options: q.options || null,
             })),
           });
+
+          setShowEmotionDialog(true); // Triggers EmotionLogger after submission
         }
       }
     }, 1000);
+  };
+
+  const handleShortAnswerSubmit = () => {
+    if (!shortAnswerText.trim()) return;
+    handleSelect(shortAnswerText.trim());
   };
 
   const handleRestart = () => {
@@ -114,11 +120,7 @@ const QuizPage: React.FC = () => {
     setAnswers([]);
     setSubmitted(false);
     setShowAnswerResult(false);
-  };
-
-  const handleShortAnswerSubmit = () => {
-    if (!shortAnswerText.trim()) return;
-    handleSelect(shortAnswerText.trim());
+    setShowEmotionDialog(true);
   };
 
   return (
@@ -126,16 +128,31 @@ const QuizPage: React.FC = () => {
       <Paper elevation={6} sx={{ backgroundColor: "#1e293b", color: "#f8fafc", borderRadius: 4, p: 4, maxWidth: 720, width: "100%" }}>
         {submitted ? (
           <>
-            <Typography variant="h4" textAlign="center" gutterBottom>Quiz Complete!</Typography>
-            <Typography variant="h6" textAlign="center" mb={3}>Score: {score} / {quizData.length} ({Math.round((score / quizData.length) * 100)}%)</Typography>
-            <Divider sx={{ mb: 3, borderColor: "#334155" }} />
+            <Typography variant="h4" textAlign="center" gutterBottom>
+              Quiz Complete!
+            </Typography>
+            <Typography variant="h6" textAlign="center" mb={3}>
+              Score: {score} / {quizData.length} ({Math.round((score / quizData.length) * 100)}%)
+            </Typography>
+
+            {showEmotionDialog && user && (
+              <EmotionLogger
+                open={showEmotionDialog}
+                onClose={() => setShowEmotionDialog(false)}
+                materialId={materialId}
+              />
+            )}
+
+            <Divider sx={{ mb: 3, mt: 3, borderColor: "#334155" }} />
 
             {quizData.map((q, idx) => {
               const userAnswer = answers[idx];
               const isCorrect = normalize(userAnswer) === normalize(q.answer);
               return (
                 <Box key={idx} sx={{ mb: 3 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>Q{idx + 1}: {q.question}</Typography>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Q{idx + 1}: {q.question}
+                  </Typography>
                   <Typography variant="body2" fontWeight={500} sx={{ color: isCorrect ? "#22c55e" : "#ef4444" }}>
                     Your Answer: {String(userAnswer)}
                   </Typography>
@@ -153,21 +170,44 @@ const QuizPage: React.FC = () => {
               );
             })}
 
-            <Button fullWidth variant="contained" onClick={handleRestart} sx={{ mt: 4, backgroundColor: "#3b82f6", "&:hover": { backgroundColor: "#2563eb" } }}>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleRestart}
+              sx={{ mt: 4, backgroundColor: "#3b82f6", "&:hover": { backgroundColor: "#2563eb" } }}
+            >
               Retake Quiz
             </Button>
+
             <BackButton />
           </>
         ) : (
           <AnimatePresence mode="wait">
-            <motion.div key={currentIndex} initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} transition={{ duration: 0.3 }}>
-              <Typography variant="h6" mb={2}>Question {currentIndex + 1} of {quizData.length}</Typography>
-              <LinearProgress variant="determinate" value={((currentIndex + 1) / quizData.length) * 100}
-                sx={{ mb: 3, backgroundColor: "#334155", "& .MuiLinearProgress-bar": { backgroundColor: "#3b82f6" } }} />
-              <Typography variant="body1" sx={{ mb: 2, fontSize: "1.15rem", fontWeight: 500 }}>{currentQuestion?.question}</Typography>
+            <motion.div
+              key={currentIndex}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Typography variant="h6" mb={2}>
+                Question {currentIndex + 1} of {quizData.length}
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={((currentIndex + 1) / quizData.length) * 100}
+                sx={{ mb: 3, backgroundColor: "#334155", "& .MuiLinearProgress-bar": { backgroundColor: "#3b82f6" } }}
+              />
+              <Typography variant="body1" sx={{ mb: 2, fontSize: "1.15rem", fontWeight: 500 }}>
+                {currentQuestion?.question}
+              </Typography>
 
               {currentQuestion.type === "mcq" && currentQuestion.options && (
-                <RadioGroup value={selectedAnswer} onChange={(e) => handleSelect(e.target.value)} sx={{ color: "#f1f5f9" }}>
+                <RadioGroup
+                  value={selectedAnswer}
+                  onChange={(e) => handleSelect(e.target.value)}
+                  sx={{ color: "#f1f5f9" }}
+                >
                   {currentQuestion.options.map((opt, idx) => {
                     const isCorrect = normalize(opt) === normalize(currentQuestion.answer);
                     const isSelected = opt === selectedAnswer;
@@ -175,16 +215,29 @@ const QuizPage: React.FC = () => {
                       <FormControlLabel
                         key={idx}
                         value={opt}
-                        control={<Radio disabled={showAnswerResult} sx={{ color: "#3b82f6", "&.Mui-checked": { color: isCorrect ? "#22c55e" : isSelected ? "#ef4444" : "#3b82f6" } }} />}
+                        control={
+                          <Radio
+                            disabled={showAnswerResult}
+                            sx={{
+                              color: "#3b82f6",
+                              "&.Mui-checked": {
+                                color: isCorrect ? "#22c55e" : isSelected ? "#ef4444" : "#3b82f6",
+                              },
+                            }}
+                          />
+                        }
                         label={opt}
                         sx={{
                           mb: 1,
                           borderRadius: 2,
                           px: 2,
                           py: 1,
-                          backgroundColor: showAnswerResult && isSelected
-                            ? isCorrect ? "#14532d" : "#7f1d1d"
-                            : "transparent",
+                          backgroundColor:
+                            showAnswerResult && isSelected
+                              ? isCorrect
+                                ? "#14532d"
+                                : "#7f1d1d"
+                              : "transparent",
                           transition: "0.3s",
                         }}
                       />
@@ -199,7 +252,6 @@ const QuizPage: React.FC = () => {
                     const boolVal = val === "True";
                     const isCorrect = boolVal === currentQuestion.answer;
                     const isSelected = selectedAnswer === boolVal;
-
                     return (
                       <Button
                         key={val}
@@ -211,7 +263,9 @@ const QuizPage: React.FC = () => {
                           borderColor: "#3b82f6",
                           backgroundColor:
                             showAnswerResult && isSelected
-                              ? isCorrect ? "#14532d" : "#7f1d1d"
+                              ? isCorrect
+                                ? "#14532d"
+                                : "#7f1d1d"
                               : "transparent",
                           "&:hover": { backgroundColor: "#1e40af" },
                         }}
