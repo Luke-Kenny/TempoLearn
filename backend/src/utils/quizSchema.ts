@@ -1,7 +1,7 @@
 // Define allowed question types
 export type QuestionType = "mcq" | "true_false" | "cloze" | "short_answer";
 
-// Define cognitive levels based on Bloom’s Taxonomy
+// Define cognitive levels inspired by Bloom’s Taxonomy 
 export type CognitiveLevel =
   | "remember"
   | "understand"

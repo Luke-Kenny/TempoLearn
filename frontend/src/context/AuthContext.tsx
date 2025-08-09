@@ -1,55 +1,57 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 
-/**
- * Tracks user login/logout state.
- * Allows useAuth() hook in any component.
- * Persists authentication state when reloading the page.
- */
-
-// Define Auth Context Type
 interface AuthContextType {
   user: User | null;
   logout: () => Promise<void>;
   loading: boolean;
 }
 
-// Creating Context
+/** OPTIONAL seam for tests so we don't import real Firebase there */
+type AuthApi = {
+  onAuthStateChanged: typeof onAuthStateChanged;
+  signOut: typeof signOut;
+  auth: typeof auth;
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Auth Provider
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{
+  children: React.ReactNode;
+  /** used only by unit tests; real app does not need to pass this */
+  authApi?: AuthApi;
+}> = ({ children, authApi }) => {
+  const apiRef = useRef<AuthApi>(
+    authApi ?? { onAuthStateChanged, signOut, auth }
+  );
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const { onAuthStateChanged: listen, auth } = apiRef.current;
+    const unsubscribe = listen(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false); // Ensures loading is false after checking auth
+      setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
   const logout = async () => {
+    const { signOut, auth } = apiRef.current;
     await signOut(auth);
   };
 
   return (
     <AuthContext.Provider value={{ user, logout, loading }}>
-      {!loading && children} {/* Waits until auth status is resolved */}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-// Hook to use Auth
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };

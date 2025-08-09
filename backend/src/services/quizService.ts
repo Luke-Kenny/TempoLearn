@@ -1,11 +1,5 @@
 import { OpenAI } from "openai";
 
-// Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Question definition
 export type QuizQuestion = {
   type: "mcq" | "true_false" | "cloze" | "short_answer";
   question: string;
@@ -22,7 +16,6 @@ export type QuizQuestion = {
   options?: string[]; // For MCQs
 };
 
-// Helpers
 const normalize = (input: string) =>
   input.trim().toLowerCase().replace(/[^\w\s]/g, "");
 
@@ -37,10 +30,11 @@ const validLevels = [
 
 const coerceLevel = (level: string): QuizQuestion["cognitive_level"] | null => {
   const normalized = level.trim().toLowerCase();
-  return validLevels.includes(normalized) ? (normalized as QuizQuestion["cognitive_level"]) : null;
+  return validLevels.includes(normalized)
+    ? (normalized as QuizQuestion["cognitive_level"])
+    : null;
 };
 
-// Runtime validation
 function isValidQuestion(obj: any): obj is QuizQuestion {
   const typeCheck = ["mcq", "true_false", "cloze", "short_answer"].includes(obj.type);
   const difficultyCheck = ["easy", "medium", "hard"].includes(obj.difficulty);
@@ -66,18 +60,21 @@ function isValidQuestion(obj: any): obj is QuizQuestion {
   return typeof obj.answer === "string";
 }
 
-// Difficulty-to-type mapping
 const typeMap = {
   easy: ["mcq", "true_false"],
   medium: ["mcq", "true_false", "cloze"],
   hard: ["mcq", "cloze", "short_answer"],
 };
 
-// Quiz generator
-export const generateQuiz = async (
+export function createOpenAI() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
+
+export async function generateQuiz(
   content: string,
-  difficulty: "easy" | "medium" | "hard" = "medium"
-): Promise<QuizQuestion[]> => {
+  difficulty: "easy" | "medium" | "hard" = "medium",
+  openaiClient = createOpenAI()
+): Promise<QuizQuestion[]> {
   if (!content || content.length < 100) {
     throw new Error("Provided content is insufficient for quiz generation.");
   }
@@ -106,63 +103,48 @@ CONTENT:
 ${content}
 """`;
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-    });
+  const completion = await openaiClient.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.3,
+  });
 
-    const raw = completion.choices?.[0]?.message?.content?.trim();
-    if (!raw) throw new Error("OpenAI returned an empty response.");
+  const raw = completion.choices?.[0]?.message?.content?.trim();
+  if (!raw) throw new Error("OpenAI returned an empty response.");
 
-    console.log("Raw OpenAI Output:\n", raw);
-
-    const jsonStart = raw.indexOf("[");
-    const jsonEnd = raw.lastIndexOf("]");
-    if (jsonStart === -1 || jsonEnd === -1) {
-      throw new Error("Response did not contain a valid JSON array.");
-    }
-
-    const cleaned = raw.slice(jsonStart, jsonEnd + 1);
-    let parsed: any;
-
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch (err) {
-      console.error("Failed to parse OpenAI JSON:\n", cleaned);
-      throw new Error("Quiz JSON could not be parsed.");
-    }
-
-    if (!Array.isArray(parsed) || parsed.length < 5 || parsed.length > 7) {
-      throw new Error("Quiz must contain 5 to 7 questions.");
-    }
-
-    // Fix and validate
-    for (let i = 0; i < parsed.length; i++) {
-      const q = parsed[i];
-
-      // Normalize cognitive_level casing
-      q.cognitive_level = coerceLevel(q.cognitive_level) ?? "understand";
-
-      if (q.type === "mcq" && Array.isArray(q.options) && typeof q.answer === "string") {
-        const matched = q.options.find((opt: string) => normalize(opt) === normalize(q.answer));
-        if (matched) q.answer = matched;
-        else {
-          console.error("Invalid MCQ answer not in options at index", i, ":", q);
-          throw new Error(`Question ${i + 1} has an invalid MCQ answer.`);
-        }
-      }
-
-      if (!isValidQuestion(q)) {
-        console.error("Invalid question format at index", i, ":", q);
-        throw new Error(`Question ${i + 1} failed validation.`);
-      }
-    }
-
-    return parsed as QuizQuestion[];
-  } catch (err: any) {
-    console.error("Quiz generation error:", err.message || err);
-    throw new Error("Quiz generation failed. Please try again.");
+  const jsonStart = raw.indexOf("[");
+  const jsonEnd = raw.lastIndexOf("]");
+  if (jsonStart === -1 || jsonEnd === -1) {
+    throw new Error("Response did not contain a valid JSON array.");
   }
-};
+
+  const cleaned = raw.slice(jsonStart, jsonEnd + 1);
+  let parsed: any;
+
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    throw new Error("Quiz JSON could not be parsed.");
+  }
+
+  if (!Array.isArray(parsed) || parsed.length < 5 || parsed.length > 7) {
+    throw new Error("Quiz must contain 5 to 7 questions.");
+  }
+
+  for (let i = 0; i < parsed.length; i++) {
+    const q = parsed[i];
+    q.cognitive_level = coerceLevel(q.cognitive_level) ?? "understand";
+
+    if (q.type === "mcq" && Array.isArray(q.options) && typeof q.answer === "string") {
+      const matched = q.options.find((opt: string) => normalize(opt) === normalize(q.answer));
+      if (matched) q.answer = matched;
+      else throw new Error(`Question ${i + 1} has an invalid MCQ answer.`);
+    }
+
+    if (!isValidQuestion(q)) {
+      throw new Error(`Question ${i + 1} failed validation.`);
+    }
+  }
+
+  return parsed as QuizQuestion[];
+}

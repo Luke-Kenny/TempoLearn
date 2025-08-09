@@ -1,15 +1,20 @@
 import { OpenAI } from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export interface CustomNotes {
   summary: string;
   keyConcepts: string[];
   visualSuggestions: string[];
-  notableInsights: string[]; // Replaces flashcards
+  notableInsights: string[];
 }
+
+/** Factory for testing purposes: can inject a mock OpenAI without needing an API key */
+let _openAIFactory: () => OpenAI = () =>
+  new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+/** Test-only hook (unused in prod) */
+export const __setOpenAIForTests = (factory: () => OpenAI) => {
+  _openAIFactory = factory;
+};
 
 export const generateCustomNotes = async (
   parsedText: string
@@ -50,6 +55,9 @@ RETURN ONLY valid JSON in this format:
 }
   `.trim();
 
+  // Lazy
+  const openai = _openAIFactory();
+
   const completion = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
     messages: [{ role: "user", content: prompt }],
@@ -70,7 +78,6 @@ RETURN ONLY valid JSON in this format:
   try {
     return JSON.parse(cleaned) as CustomNotes;
   } catch (err) {
-    console.error("Failed to parse OpenAI JSON:\n", cleaned);
     throw new Error("Custom notes response was not valid JSON.");
   }
 };
