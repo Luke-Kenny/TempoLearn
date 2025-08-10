@@ -1,149 +1,163 @@
 // src/components/FeatureCard.tsx
-
 import React from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Collapse,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Box, Card, CardContent, Typography, ButtonBase } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { TOKENS as T } from "../theme/tokens";
+
+/** Keep in sync with CardCarousel */
+const CARD_WIDTH = 380; // ← was 320
 
 interface FeatureCardProps {
   title: string;
   icon: React.ReactNode;
-  color: string;
-  details: string;
-  isExpanded: boolean;
-  onToggle: () => void;
+  color?: string;              // accent color
+  description: string;         // short summary (1–2 lines)
+  ctaLabel?: string;           // defaults to "Open"
+  onClick: () => void;         // activate
 }
-
-const getSummaryForTitle = (title: string): string => {
-  switch (title) {
-    case "Your Courses":
-      return "View and organize your enrolled subjects.";
-    case "Practice Quiz":
-      return "Quick tests tailored to your study sets.";
-    case "Flashcards":
-      return "Memory-boosting tools for key concepts.";
-    case "Progress Tracker":
-      return "Visualize learning milestones and habits.";
-    case "Settings":
-      return "Customize your learning preferences.";
-    case "Expert Solutions":
-      return "Step-by-step answers to hard problems.";
-    case "Study Guides":
-      return "Concise summaries for rapid revision.";
-    case "Daily Challenges":
-      return "New prompts to keep your streak alive.";
-    default:
-      return "Explore this feature to learn more.";
-  }
-};
 
 const FeatureCard: React.FC<FeatureCardProps> = ({
   title,
   icon,
   color,
-  details,
-  isExpanded,
-  onToggle,
+  description,
+  ctaLabel = "Open",
+  onClick,
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const accent = color ?? T.colors.accent;
+  const ring = alpha(accent, 0.45);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+    }
+  };
 
   return (
     <Box
-      onClick={onToggle}
       sx={{
-        width: 320, // Fixed to match CARD_WIDTH in CardCarousel
-        height: isMobile ? 280 : 340,
-        borderRadius: 6,
-        backgroundColor: color,
-        boxShadow: 4,
-        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-        "&:hover": {
-          transform: "translateY(-5px)",
-          boxShadow: 6,
-        },
-        cursor: "pointer",
+        width: CARD_WIDTH,
+        height: 260,
+        borderRadius: T.radius.md,
+        transition: "transform .18s ease, box-shadow .18s ease",
+        "&:hover": { transform: "translateY(-4px)" },
       }}
     >
-      <Card
-        elevation={0}
+      <ButtonBase
+        onClick={onClick}
+        onKeyDown={handleKeyDown}
+        focusRipple
+        role="button"
+        aria-label={`${title} card`}
         sx={{
-          backgroundColor: color,
-          color: "#fff",
-          borderRadius: 6,
+          width: "100%",
           height: "100%",
-          display: "flex",
-          flexDirection: "column",
+          borderRadius: T.radius.md,
+          textAlign: "left",
         }}
       >
-        <CardContent
+        <Card
+          elevation={0}
           sx={{
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "space-between",
             height: "100%",
-            paddingBottom: 2,
-            px: 2,
+            width: "100%",
+            borderRadius: T.radius.md,
+            backgroundColor: T.colors.panel,
+            border: `1px solid ${T.colors.borderWeak}`,
+            boxShadow: T.shadows.md,
+            position: "relative",
+            overflow: "hidden",
+            transition: "border-color .18s ease, box-shadow .18s ease",
+            "&:hover": { borderColor: ring, boxShadow: T.shadows.lg },
+            "&:focus-within": { outline: `3px solid ${ring}`, outlineOffset: 2 },
+            "&:before": {
+              content: '""',
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0))",
+              pointerEvents: "none",
+            },
           }}
         >
-          <Box sx={{ mb: 1 }}>{icon}</Box>
-
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>
-            {title}
-          </Typography>
-
-          <Typography
-            variant="body2"
-            color="#ddd"
-            sx={{ mb: 1, textAlign: "center" }}
-            noWrap
-          >
-            {getSummaryForTitle(title)}
-          </Typography>
-
-          <Box
+          <CardContent
             sx={{
-              mt: "auto",
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              width: "100%",
-              pt: 1,
-              borderTop: "1px solid rgba(255,255,255,0.1)",
+              height: "100%",
+              p: 3,
+              gap: 1,
             }}
           >
-            <ExpandMoreIcon
+            {/* Icon chip */}
+            <Box
+              aria-hidden
               sx={{
-                transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease",
-                fontSize: 28,
+                width: 46,
+                height: 46,
+                borderRadius: T.radius.md,
+                display: "grid",
+                placeItems: "center",
+                backgroundColor: alpha(accent, 0.16),
+                border: `1px solid ${alpha(accent, 0.45)}`,
               }}
-            />
-            <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-              <Typography
-                variant="body2"
-                color="#ccc"
-                sx={{
-                  mt: 1,
-                  fontSize: "0.85rem",
-                  textAlign: "center",
-                }}
-              >
-                {details}
+            >
+              <Box sx={{ "& > *": { color: accent, fontSize: 24 } }}>{icon}</Box>
+            </Box>
+
+            {/* Title */}
+            <Typography
+              variant="h6"
+              sx={{ mt: 0.5, fontWeight: 800, color: T.colors.textPrimary, lineHeight: 1.25 }}
+            >
+              {title}
+            </Typography>
+
+            {/* Description (2-line clamp) */}
+            <Typography
+              variant="body2"
+              sx={{
+                color: T.colors.textMuted,
+                lineHeight: 1.55,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                pr: 0.5,
+              }}
+            >
+              {description}
+            </Typography>
+
+            <Box sx={{ flexGrow: 1 }} />
+
+            {/* CTA Row */}
+            <Box
+              sx={{
+                mt: 1,
+                pt: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderTop: `1px solid ${alpha("#fff", 0.08)}`,
+              }}
+            >
+              <Typography variant="body2" sx={{ color: alpha("#fff", 0.9), fontWeight: 600 }}>
+                {ctaLabel}
               </Typography>
-            </Collapse>
-          </Box>
-        </CardContent>
-      </Card>
+              <ChevronRightIcon
+                sx={{
+                  color: accent,
+                  transition: "transform .18s ease",
+                  ".MuiButtonBase-root:hover &": { transform: "translateX(3px)" },
+                }}
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </ButtonBase>
     </Box>
   );
 };

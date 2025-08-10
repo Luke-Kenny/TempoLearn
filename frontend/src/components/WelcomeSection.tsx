@@ -1,40 +1,21 @@
-import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Container,
-  Typography,
-  Divider,
-  Chip,
-} from "@mui/material";
+// src/components/WelcomeSection.tsx
+import React, { useEffect, useState } from "react";
+import { Box, Chip, Container, Typography, Stack } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import EmotionLogger from "./EmotionLogger";
+import { TOKENS as T } from "../theme/tokens";
 
-const emotionChips = [
-  "Confident",
-  "Frustrated",
-  "Tired",
-  "Motivated",
-  "Overwhelmed",
-  "Focused",
-];
+const EMOTIONS = ["Confident", "Frustrated", "Tired", "Motivated", "Overwhelmed", "Focused"];
 
 const WelcomeSection: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-
   const [showEmotionDialog, setShowEmotionDialog] = useState(false);
   const [selectedEmotion, setSelectedEmotion] = useState("");
 
-  const handleTempoStudyClick = () => navigate("/tempostudy");
-  const handleMyNotesClick = () => navigate("/mymaterials");
-  const handleDashboardClick = () => navigate("/dashboard");
-
   useEffect(() => {
-    const seen = sessionStorage.getItem("emotionPromptSeen");
-    if (!seen) {
+    if (!sessionStorage.getItem("emotionPromptSeen")) {
       sessionStorage.setItem("emotionPromptSeen", "true");
     }
   }, []);
@@ -45,166 +26,181 @@ const WelcomeSection: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ pt: { xs: 18, sm: 22 }, pb: 10 }}>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        <Typography
-          variant="h3"
-          component="h1"
-          fontWeight={700}
+    <Container
+      maxWidth="lg"
+      sx={{
+        pt: { xs: 14, md: 18 },
+        pb: { xs: 6, md: 6 },
+        // light ambient glow behind the header block
+        position: "relative",
+        "&:before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: { xs: "90%", md: 880 },
+          height: 220,
+          background: `radial-gradient(60% 60% at 50% 40%, ${alpha(
+            T.colors.accent,
+            0.07
+          )} 0%, transparent 70%)`,
+          pointerEvents: "none",
+        },
+      }}
+    >
+      {/* Center column wrapper */}
+      <Box sx={{ maxWidth: 920, mx: "auto" }}>
+        {/* Heading */}
+        <Stack
+          component={motion.div}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          spacing={1.25}
+          alignItems="center"
           textAlign="center"
-          sx={{ fontSize: { xs: "2rem", sm: "2.75rem" }, mb: 2, color: "#ffffff" }}
+          sx={{ mb: { xs: 4, md: 5 } }}
         >
-          Welcome to{" "}
-          <Box component="span" sx={{ color: "#2ecc71" }}>
-            TempoLearn
-          </Box>
-          {user?.email ? ` ${user.email}!` : "!"}
-        </Typography>
-
-        <Divider
-          sx={{
-            mb: 3,
-            maxWidth: 160,
-            mx: "auto",
-            borderColor: "#2ecc71",
-            opacity: 0.8,
-          }}
-        />
-
-        <Typography
-          variant="h6"
-          textAlign="center"
-          sx={{
-            color: "#bbb",
-            maxWidth: 720,
-            mx: "auto",
-            fontWeight: 400,
-            lineHeight: 1.6,
-            mb: 4,
-          }}
-        >
-          Your intelligent study assistant — plan smarter, track progress, and
-          focus where it matters most.
-        </Typography>
-
-        {/* Emotion Chips Row */}
-        <Box
-          display="flex"
-          flexWrap="wrap"
-          justifyContent="center"
-          gap={1.5}
-          mb={5}
-        >
-          {emotionChips.map((label) => (
-            <Chip
-              key={label}
-              label={label}
-              onClick={() => handleEmotionClick(label)}
-              sx={{
-                backgroundColor: "#334155",
-                color: "#f1f5f9",
-                fontWeight: 500,
-                borderRadius: "1.5rem",
-                px: 2,
-                py: 0.5,
-                "&:hover": {
-                  backgroundColor: "#3b82f6",
-                  color: "#fff",
-                },
-                cursor: "pointer",
-                transition: "0.3s",
-              }}
-            />
-          ))}
-        </Box>
-      </motion.div>
-
-      {/* Button Row */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          gap: 3,
-        }}
-      >
-        {/* TempoStudy Button */}
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 300 }}>
-          <Button
-            variant="contained"
-            onClick={handleTempoStudyClick}
+          <Typography
+            variant="h3"
+            component="h1"
             sx={{
-              backgroundColor: "#2d9cdb",
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: "999px",
-              px: 6,
-              py: 1.6,
-              fontSize: "1.05rem",
-              boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
-              "&:hover": {
-                backgroundColor: "#238ac9",
-              },
+              fontWeight: 800,
+              letterSpacing: -0.2,
+              fontSize: { xs: "2rem", md: "2.6rem" },
+              color: T.colors.textPrimary,
+              lineHeight: 1.15,
             }}
           >
-            Uploads
-          </Button>
-        </motion.div>
+            {user?.email ? (
+              <>
+                Welcome,{" "}
+                <Box
+                  component="span"
+                  sx={{
+                    color: T.colors.accent,
+                    position: "relative",
+                    display: "inline-block",
+                    "&:after": {
+                      content: '""',
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      bottom: -6,
+                      height: 3,
+                      borderRadius: 3,
+                      background: alpha(T.colors.accent, 0.6),
+                    },
+                  }}
+                >
+                  {user.email}
+                </Box>
+                !
+              </>
+            ) : (
+              <>
+                Welcome to{" "}
+                <Box component="span" sx={{ color: T.colors.accent }}>
+                  TempoLearn
+                </Box>
+              </>
+            )}
+          </Typography>
 
-        {/* My Notes Button */}
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 300 }}>
-          <Button
-            variant="outlined"
-            onClick={handleMyNotesClick}
+          <Typography
+            variant="h6"
             sx={{
-              color: "#ffffff",
-              borderColor: "#2ecc71",
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: "999px",
-              px: 6,
-              py: 1.6,
-              fontSize: "1.05rem",
-              "&:hover": {
-                borderColor: "#27ae60",
-                backgroundColor: "rgba(46, 204, 113, 0.1)",
-              },
+              color: T.colors.textMuted,
+              maxWidth: 860,
+              mx: "auto",
+              lineHeight: 1.65,
+              fontWeight: 400,
             }}
           >
-            Notes
-          </Button>
-        </motion.div>
+            Your intelligent study assistant — plan smarter, track progress, and focus where it matters most.
+          </Typography>
 
-        {/* Dashboard Button */}
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 300 }}>
-          <Button
-            variant="outlined"
-            onClick={handleDashboardClick}
+          {/* Accent rule centered */}
+          <Box
             sx={{
-              color: "#ffffff",
-              borderColor: "#f59e0b",
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: "999px",
-              px: 6,
-              py: 1.6,
-              fontSize: "1.05rem",
-              "&:hover": {
-                borderColor: "#d97706",
-                backgroundColor: "rgba(245, 158, 11, 0.1)",
-              },
+              mt: 1.25,
+              width: 160,
+              height: 2,
+              borderRadius: 2,
+              mx: "auto",
+              background: `linear-gradient(90deg, transparent, ${alpha(
+                T.colors.accent,
+                0.7
+              )}, transparent)`,
             }}
+            aria-hidden
+          />
+        </Stack>
+
+        {/* Emotions */}
+        <Stack alignItems="center" sx={{ mb: { xs: 4, md: 5 } }}>
+          <Stack
+            direction="row"
+            rowGap={1}
+            columnGap={1}
+            flexWrap="wrap"
+            justifyContent="center"
+            component={motion.div}
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: { opacity: 0, y: -6 },
+              show: { opacity: 1, y: 0, transition: { staggerChildren: 0.04 } },
+            }}
+            sx={{ maxWidth: 720 }}
           >
-            Dashboard
-          </Button>
-        </motion.div>
+            {EMOTIONS.map((label) => (
+              <Box
+                key={label}
+                component={motion.div}
+                variants={{ hidden: { opacity: 0, y: -6 }, show: { opacity: 1, y: 0 } }}
+              >
+                <Chip
+                  label={label}
+                  onClick={() => handleEmotionClick(label)}
+                  clickable
+                  sx={{
+                    color: T.colors.textPrimary,
+                    backgroundColor: alpha("#fff", 0.04),
+                    border: `1px solid ${alpha("#fff", 0.08)}`,
+                    borderRadius: 999,
+                    px: 1.5,
+                    height: 34,
+                    fontWeight: 600,
+                    letterSpacing: 0.2,
+                    transition:
+                      "background-color .2s ease, border-color .2s ease, transform .15s ease",
+                    "&:hover": {
+                      backgroundColor: alpha(T.colors.accent, 0.12),
+                      borderColor: alpha(T.colors.accent, 0.45),
+                      transform: "translateY(-1px)",
+                    },
+                    "&:focus-visible": {
+                      outline: `3px solid ${alpha(T.colors.accent, 0.45)}`,
+                      outlineOffset: 2,
+                    },
+                  }}
+                />
+              </Box>
+            ))}
+          </Stack>
+
+          <Typography
+            variant="body2"
+            sx={{ mt: 1.5, color: alpha(T.colors.textMuted, 0.9) }}
+          >
+            How are you feeling this session?
+          </Typography>
+        </Stack>
       </Box>
 
-      {/* EmotionLogger Dialog */}
+      {/* Emotion Logger */}
       {showEmotionDialog && (
         <EmotionLogger
           open={showEmotionDialog}

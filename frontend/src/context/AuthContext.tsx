@@ -8,7 +8,6 @@ interface AuthContextType {
   loading: boolean;
 }
 
-/** OPTIONAL seam for tests so we don't import real Firebase there */
 type AuthApi = {
   onAuthStateChanged: typeof onAuthStateChanged;
   signOut: typeof signOut;
@@ -19,7 +18,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{
   children: React.ReactNode;
-  /** used only by unit tests; real app does not need to pass this */
   authApi?: AuthApi;
 }> = ({ children, authApi }) => {
   const apiRef = useRef<AuthApi>(

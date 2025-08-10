@@ -1,101 +1,152 @@
-import React from "react";
+// src/components/DifficultyBreakdownChart.tsx
+import React, { useMemo } from "react";
 import {
+  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
   LabelList,
 } from "recharts";
+import { TOKENS as T } from "../theme/tokens";
 
-interface Answer {
-  isCorrect: boolean;
-  difficulty: "easy" | "medium" | "hard";
-}
-
-interface Attempt {
-  answers: Answer[];
-}
+type Diff = "easy" | "medium" | "hard";
+interface Answer { isCorrect: boolean; difficulty: Diff; }
+interface Attempt { answers: Answer[]; }
 
 interface Props {
   attempts: Attempt[];
+  compact?: boolean;            // tighter spacing/fonts
+  height?: number | string;     // parent controls height; default 240
 }
 
-const DifficultyBreakdownChart: React.FC<Props> = ({ attempts }) => {
-  const stats = {
-    easy: { total: 0, correct: 0 },
-    medium: { total: 0, correct: 0 },
-    hard: { total: 0, correct: 0 },
-  };
+const axisStroke = "rgba(255,255,255,.25)";
+const tickFill = T.colors.textMuted;
+const gridStroke = "rgba(255,255,255,.08)";
+const green = T.colors.accent;
 
-  attempts.forEach((attempt) => {
-    attempt.answers.forEach((ans) => {
-      if (["easy", "medium", "hard"].includes(ans.difficulty)) {
-        stats[ans.difficulty].total++;
-        if (ans.isCorrect) stats[ans.difficulty].correct++;
-      }
-    });
-  });
+const Tip: React.FC<any> = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div
+      style={{
+        background: "rgba(13,15,18,.9)",
+        border: "1px solid rgba(255,255,255,.12)",
+        borderRadius: 8,
+        padding: "8px 10px",
+        fontSize: 12,
+        color: "#E6F6EA",
+        boxShadow: T.shadows.md,
+      }}
+    >
+      <div style={{ fontWeight: 800, marginBottom: 4 }}>{String(label).toUpperCase()}</div>
+      <div>Accuracy: <strong>{d.accuracy}%</strong></div>
+      <div>Correct: <strong>{d.correct}</strong></div>
+      <div>Incorrect: <strong>{d.incorrect}</strong></div>
+      <div>Total: <strong>{d.total}</strong></div>
+    </div>
+  );
+};
 
-  const data = (["easy", "medium", "hard"] as const).map((diff) => {
-    const { total, correct } = stats[diff];
-    const accuracy = total ? Math.round((correct / total) * 100) : 0;
-
-    return {
-      difficulty: diff,
-      correct,
-      incorrect: total - correct,
-      accuracy,
-      total,
+const DifficultyBreakdownChart: React.FC<Props> = ({
+  attempts,
+  compact = true,
+  height = 240,
+}) => {
+  const data = useMemo(() => {
+    const stats: Record<Diff, { total: number; correct: number }> = {
+      easy: { total: 0, correct: 0 },
+      medium: { total: 0, correct: 0 },
+      hard: { total: 0, correct: 0 },
     };
-  });
+    (attempts || []).forEach((att) =>
+      (att.answers || []).forEach((a) => {
+        if (!a || !(a.difficulty in stats)) return;
+        stats[a.difficulty as Diff].total += 1;
+        if (a.isCorrect) stats[a.difficulty as Diff].correct += 1;
+      })
+    );
+    return (["easy", "medium", "hard"] as Diff[]).map((d) => {
+      const { total, correct } = stats[d];
+      const incorrect = total - correct;
+      const accuracy = total ? Math.round((correct / total) * 100) : 0;
+      return {
+        difficulty: d,
+        accuracy,               // 0–100
+        accuracyLabel: `${accuracy}%`,
+        correct,
+        incorrect,
+        total,
+      };
+    });
+  }, [attempts]);
+
+  const allZero = data.every((d) => d.total === 0);
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
-        <XAxis
-          dataKey="difficulty"
-          tick={{ fill: "#f8fafc", fontSize: 14 }}
-          axisLine={{ stroke: "#334155" }}
-          tickLine={false}
-        />
-        <YAxis
-          tick={{ fill: "#f8fafc", fontSize: 13 }}
-          axisLine={{ stroke: "#334155" }}
-          tickLine={false}
-          label={{
-            value: "Attempts",
-            angle: -90,
-            position: "insideLeft",
-            fill: "#f8fafc",
-            fontSize: 12,
-          }}
-        />
-        <Tooltip
-          cursor={{ fill: "transparent" }}
-          contentStyle={{
-            backgroundColor: "#1e293b",
-            borderColor: "#3b82f6",
-            color: "#f8fafc",
-          }}
-          formatter={(value: number, name: string) => {
-            const label = name === "correct" ? "Correct" : "Incorrect";
-            return [`${value}`, label];
-          }}
-          labelFormatter={(label) => {
-            const entry = data.find(d => d.difficulty === label);
-            return entry
-              ? `${label.toUpperCase()} - ${entry.accuracy}% accuracy`
-              : label;
-          }}
-        />
-        <Bar dataKey="correct" fill="#10b981">
-          <LabelList dataKey="accuracy" position="top" formatter={(val) => `${val}%`} fill="#f8fafc" fontSize={12} />
-        </Bar>
-        <Bar dataKey="incorrect" fill="#ef4444" />
-      </BarChart>
-    </ResponsiveContainer>
+    <div role="region" aria-label="Difficulty accuracy" style={{ width: "100%", height }}>
+      {allZero ? (
+        <div style={{ color: T.colors.textMuted, fontSize: 14, padding: 8 }}>
+          No answers yet. Take a quiz to populate this chart.
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{
+              top: compact ? 6 : 12,
+              right: compact ? 8 : 12,
+              left: compact ? 8 : 12,
+              bottom: compact ? 4 : 8,
+            }}
+            barCategoryGap={compact ? 18 : 24}
+          >
+            <CartesianGrid stroke={gridStroke} horizontal vertical={false} />
+
+            <YAxis
+              type="category"
+              dataKey="difficulty"
+              tick={{ fill: T.colors.textPrimary, fontSize: compact ? 12 : 13, fontWeight: 700 }}
+              axisLine={{ stroke: axisStroke }}
+              tickLine={false}
+              width={compact ? 70 : 80}
+            />
+
+            <XAxis
+              type="number"
+              domain={[0, 100]}
+              tick={{ fill: tickFill, fontSize: compact ? 11 : 12 }}
+              axisLine={{ stroke: axisStroke }}
+              tickLine={false}
+              tickFormatter={(v) => `${v}%`}
+            />
+
+            <Tooltip cursor={{ fill: "transparent" }} content={<Tip />} />
+
+            {/* Single progress bar + muted track */}
+            <Bar
+              dataKey="accuracy"
+              fill={green}
+              radius={[0, 8, 8, 0]}
+              maxBarSize={compact ? 22 : 26}
+              background={{ fill: "rgba(255,255,255,.10)", radius: 8 }}
+            >
+              <LabelList
+                dataKey="accuracyLabel"
+                position="right"
+                fill={T.colors.textPrimary}
+                fontSize={compact ? 11 : 12}
+                style={{ fontWeight: 800 }}
+              />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
   );
 };
 

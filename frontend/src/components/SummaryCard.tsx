@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, CardContent, Typography } from "@mui/material";
+import { Card, CardContent, Typography, Stack } from "@mui/material";
+import { TOKENS as T } from "../theme/tokens";
 
 interface Props {
   title: string;
@@ -10,20 +11,38 @@ const SummaryCard: React.FC<Props> = ({ title, value }) => {
   return (
     <Card
       sx={{
-        backgroundColor: "#1e293b",
-        color: "#f8fafc",
+        bgcolor: T.colors.panel,
+        color: T.colors.textPrimary,
         borderRadius: 3,
-        boxShadow: "0 0 12px rgba(0,0,0,0.25)",
+        border: `1px solid ${T.colors.borderWeak}`,
+        boxShadow: T.shadows.md,
         height: "100%",
+        transition: "transform 0.15s ease, box-shadow 0.15s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: T.shadows.lg,
+        },
       }}
     >
-      <CardContent>
-        <Typography variant="subtitle2" sx={{ opacity: 0.7 }}>
-          {title}
-        </Typography>
-        <Typography variant="h5" fontWeight={700}>
-          {value}
-        </Typography>
+      <CardContent sx={{ py: 2.5, px: 2.5 }}>
+        <Stack spacing={0.5}>
+          <Typography
+            variant="subtitle2"
+            sx={{ color: T.colors.textMuted, fontWeight: 500, letterSpacing: 0.3 }}
+          >
+            {title}
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 800,
+              color: T.colors.accent,
+              lineHeight: 1.2,
+            }}
+          >
+            {value}
+          </Typography>
+        </Stack>
       </CardContent>
     </Card>
   );

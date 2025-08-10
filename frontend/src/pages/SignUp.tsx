@@ -1,3 +1,4 @@
+// src/pages/SignUp.tsx
 import React, { useState } from "react";
 import {
   Box,
@@ -9,6 +10,7 @@ import {
   Alert,
   CircularProgress,
   InputAdornment,
+  Link,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -16,6 +18,8 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { alpha } from "@mui/material/styles";
+import { TOKENS as T } from "../theme/tokens";
 
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -30,9 +34,9 @@ const SignUp: React.FC = () => {
     setError("");
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(auth, email.trim(), password);
       navigate("/home");
-    } catch (err: any) {
+    } catch {
       setError("Could not sign up. Try a stronger password or different email.");
     } finally {
       setLoading(false);
@@ -42,106 +46,140 @@ const SignUp: React.FC = () => {
   return (
     <Box
       sx={{
-        backgroundColor: "#0f2027",
         minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        display: "grid",
+        placeItems: "center",
         px: 2,
+        background: `
+          radial-gradient(1200px 700px at -10% 0%, rgba(46,204,113,0.07) 0%, transparent 60%),
+          radial-gradient(1200px 700px at 115% 20%, rgba(46,204,113,0.05) 0%, transparent 60%),
+          linear-gradient(to bottom right, ${T.colors.heroA}, ${T.colors.heroB})
+        `,
       }}
     >
       <Container maxWidth="xs">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <Box
+            component="section"
+            aria-label="Sign up form"
             sx={{
               position: "relative",
-              backgroundColor: "#1e293b",
-              color: "#f8fafc",
-              borderRadius: 4,
-              p: 4,
-              boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+              backgroundColor: T.colors.panel,
+              border: `1px solid ${T.colors.borderWeak}`,
+              borderRadius: T.radius.md,
+              boxShadow: T.shadows.md,
+              p: 3.25,
             }}
           >
             {/* Close Button */}
             <IconButton
               onClick={() => navigate("/")}
+              aria-label="Back to home"
+              size="small"
               sx={{
                 position: "absolute",
-                top: 12,
-                left: 12,
-                color: "#94a3b8",
+                top: 15,
+                left: 15,
+                color: T.colors.textMuted,
+                "&:focus-visible": {
+                  outline: `3px solid ${alpha(T.colors.accent, 0.45)}`,
+                  outlineOffset: 2,
+                },
               }}
             >
-              <CloseIcon />
+              <CloseIcon fontSize="small" />
             </IconButton>
 
             {/* Title */}
             <Typography
               variant="h5"
-              textAlign="center"
-              fontWeight={700}
-              sx={{ color: "#f1f5f9", mb: 2 }}
+              align="center"
+              sx={{ fontWeight: 800, color: T.colors.textPrimary, mb: 2 }}
             >
               Sign Up
             </Typography>
 
-            {/* Error Feedback */}
+            {/* Error Message */}
             {error && (
-              <Alert severity="error" sx={{ mb: 2, fontWeight: 500 }}>
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 2,
+                  backgroundColor: alpha("#ff1744", 0.08),
+                  border: `1px solid ${alpha("#ff1744", 0.35)}`,
+                }}
+              >
                 {error}
               </Alert>
             )}
 
             {/* Form */}
-            <form onSubmit={handleSignUp}>
+            <Box component="form" onSubmit={handleSignUp} noValidate>
               <TextField
                 fullWidth
+                required
                 label="Email"
                 type="email"
-                required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 margin="normal"
-                InputLabelProps={{ style: { color: "#ccc" } }}
-                InputProps={{
-                  sx: {
-                    color: "#fff",
-                    backgroundColor: "#334155",
-                    borderRadius: 2,
+                InputLabelProps={{ sx: { color: T.colors.textMuted } }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: alpha("#fff", 0.02),
+                    borderRadius: T.radius.md,
+                    color: T.colors.textPrimary,
+                    "& fieldset": { borderColor: T.colors.borderWeak },
+                    "&:hover fieldset": { borderColor: alpha("#fff", 0.35) },
+                    "&.Mui-focused fieldset": { borderColor: T.colors.accent },
+                  },
+                  "& input:-webkit-autofill": {
+                    WebkitTextFillColor: T.colors.textPrimary,
+                    WebkitBoxShadow: `0 0 0 100px ${alpha("#fff", 0.02)} inset`,
                   },
                 }}
               />
 
               <TextField
                 fullWidth
-                label="Password"
                 required
+                label="Password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 margin="normal"
-                InputLabelProps={{ style: { color: "#ccc" } }}
+                InputLabelProps={{ sx: { color: T.colors.textMuted } }}
                 InputProps={{
-                  sx: {
-                    color: "#fff",
-                    backgroundColor: "#334155",
-                    borderRadius: 2,
-                  },
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() => setShowPassword((prev) => !prev)}
+                        onClick={() => setShowPassword((s) => !s)}
                         edge="end"
-                        sx={{ color: "#94a3b8" }}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        sx={{
+                          color: T.colors.textMuted,
+                          "&:focus-visible": {
+                            outline: `3px solid ${alpha(T.colors.accent, 0.45)}`,
+                            outlineOffset: 2,
+                          },
+                        }}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: alpha("#fff", 0.02),
+                    borderRadius: T.radius.md,
+                    color: T.colors.textPrimary,
+                    "& fieldset": { borderColor: T.colors.borderWeak },
+                    "&:hover fieldset": { borderColor: alpha("#fff", 0.35) },
+                    "&.Mui-focused fieldset": { borderColor: T.colors.accent },
+                  },
                 }}
               />
 
@@ -151,44 +189,50 @@ const SignUp: React.FC = () => {
                 variant="contained"
                 disabled={loading}
                 sx={{
-                  mt: 3,
-                  backgroundColor: "#3b82f6",
+                  mt: 2.25,
+                  height: 44,
+                  backgroundColor: T.colors.accent,
+                  color: "#0d0f12",
                   textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  py: 1.2,
-                  borderRadius: 2,
-                  "&:hover": { backgroundColor: "#2563eb" },
+                  fontWeight: 700,
+                  borderRadius: T.radius.md,
+                  boxShadow: T.shadows.md,
+                  "&:hover": { backgroundColor: T.colors.accentHover },
+                  "&:focus-visible": {
+                    outline: `3px solid ${alpha(T.colors.accent, 0.45)}`,
+                    outlineOffset: 2,
+                  },
                 }}
               >
-                {loading ? (
-                  <CircularProgress size={22} color="inherit" />
-                ) : (
-                  "Sign Up"
-                )}
+                {loading ? <CircularProgress size={20} color="inherit" /> : "Sign Up"}
               </Button>
-            </form>
+            </Box>
 
             {/* Navigation to Sign In */}
-            <Typography
-              variant="body2"
-              textAlign="center"
-              sx={{ mt: 3, color: "#cbd5e1" }}
+            <Box
+              sx={{
+                mt: 2.5,
+                display: "flex",
+                justifyContent: "center",
+                color: T.colors.textMuted,
+                gap: 1,
+              }}
             >
-              Already have an account?
-              <Button
-                onClick={() => navigate("/signin")}
-                sx={{
-                  textTransform: "none",
-                  color: "#2ecc71",
-                  fontWeight: 600,
-                  ml: 0.5,
-                  "&:hover": { color: "#27ae60" },
-                }}
-              >
-                Sign In
-              </Button>
-            </Typography>
+              <Typography variant="body2">
+                Already have an account?{" "}
+                <Link
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/signin");
+                  }}
+                  href="/signin"
+                  underline="hover"
+                  sx={{ color: T.colors.accent, fontWeight: 600, cursor: "pointer" }}
+                >
+                  Sign In
+                </Link>
+              </Typography>
+            </Box>
           </Box>
         </motion.div>
       </Container>
