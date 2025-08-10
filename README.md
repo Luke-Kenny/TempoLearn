@@ -10,37 +10,10 @@
 - **Firebase Hosting** with custom domain: [www.tempolearn.org](http://www.tempolearn.org)
 - Modular and scalable project structure
 - Responsive interface for desktop and mobile
-- **Card Carousel**, **Flashcard UI**, **Auth-protected pages**
 - **Firebase Authentication** for user login
 - **GitHub Actions** for CI/CD and deployment automation
 
 ---
-
-## File/Folder Structure
-
-```plaintext
-TempoLearn/
-├── frontend/
-│   ├── src/
-│   │   ├── assets/          # Images and visual assets
-│   │   ├── components/      # App bar, carousel, cards, footer, etc.
-│   │   ├── context/         # Auth context
-│   │   ├── data/            # Static mock data
-│   │   ├── firebase/        # Firebase configuration
-│   │   ├── pages/           # Pages like Home, LandingPage, Signin
-│   │   ├── routes/          # Auth routing
-│   │   ├── styles/          # CSS modules
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   ├── .github/             # GitHub Actions workflows
-│   ├── vite.config.ts
-│   ├── firebase.json
-│   ├── .firebaserc
-│   └── public/
-├── package.json
-├── tsconfig.json
-└── README.md
-
 
 TO RUN BACKEND:
 npx ts-node-dev src/index.ts
