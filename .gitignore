@@ -12,6 +12,7 @@ node_modules/
 
 # Firebase Credentials (VERY IMPORTANT)
 service-account.json
+firebase-service.json
 
 
 # Environment Variables (Security)
@@ -46,3 +47,7 @@ dist-ssr/
 *.bak
 *.swp
 Thumbs.db
+
+# Secrets
+*.service_account.json
+*firebase*service*.json*
