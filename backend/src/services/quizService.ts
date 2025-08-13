@@ -13,7 +13,7 @@ export type QuizQuestion = {
     | "evaluate"
     | "create";
   explanation?: string;
-  options?: string[]; // For MCQs
+  options?: string[];
 };
 
 const normalize = (input: string) =>
@@ -36,10 +36,16 @@ const coerceLevel = (level: string): QuizQuestion["cognitive_level"] | null => {
 };
 
 function isValidQuestion(obj: any): obj is QuizQuestion {
-  const typeCheck = ["mcq", "true_false", "cloze", "short_answer"].includes(obj.type);
+  const typeCheck = ["mcq", "true_false", "cloze", "short_answer"].includes(
+    obj.type
+  );
   const difficultyCheck = ["easy", "medium", "hard"].includes(obj.difficulty);
   const levelCheck = validLevels.includes(obj.cognitive_level);
-  const base = typeof obj.question === "string" && difficultyCheck && levelCheck && typeCheck;
+  const base =
+    typeof obj.question === "string" &&
+    difficultyCheck &&
+    levelCheck &&
+    typeCheck;
 
   if (!base) return false;
 
@@ -49,7 +55,9 @@ function isValidQuestion(obj: any): obj is QuizQuestion {
       obj.options.length === 4 &&
       obj.options.every((opt: string) => typeof opt === "string") &&
       typeof obj.answer === "string" &&
-      obj.options.some((opt: string) => normalize(opt) === normalize(obj.answer))
+      obj.options.some(
+        (opt: string) => normalize(opt) === normalize(obj.answer)
+      )
     );
   }
 
@@ -65,6 +73,29 @@ const typeMap = {
   medium: ["mcq", "true_false", "cloze"],
   hard: ["mcq", "cloze", "short_answer"],
 };
+
+// Simple distractor generator
+function ensureGuidedOptions(q: QuizQuestion, content: string) {
+  if (
+    !Array.isArray(q.options) &&
+    typeof q.answer === "string" &&
+    q.answer.trim().length > 0
+  ) {
+    const distractors = Array.from(
+      new Set(
+        content
+          .split(/\s+/)
+          .filter(
+            (w) =>
+              w.length > 4 &&
+              normalize(w) !== normalize(q.answer as string) &&
+              isNaN(Number(w))
+          )
+      )
+    ).slice(0, 3);
+    q.options = [q.answer as string, ...distractors].slice(0, 4);
+  }
+}
 
 export function createOpenAI() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -84,7 +115,9 @@ export async function generateQuiz(
   const prompt = `
 You are an AI quiz engine. Based on the academic content below, generate a JSON array of 5 to 7 quiz questions.
 
-Only use question types appropriate for difficulty "${difficulty}": ${allowedTypes.join(", ")}.
+Only use question types appropriate for difficulty "${difficulty}": ${allowedTypes.join(
+    ", "
+  )}.
 Cognitive levels must be: remember, understand, apply, analyze, evaluate, create (lowercase only).
 
 Each question must include:
@@ -132,13 +165,27 @@ ${content}
   }
 
   for (let i = 0; i < parsed.length; i++) {
-    const q = parsed[i];
-    q.cognitive_level = coerceLevel(q.cognitive_level) ?? "understand";
+    const q = parsed[i] as QuizQuestion;
+    q.cognitive_level =
+      coerceLevel((q as any).cognitive_level) ?? "understand";
 
-    if (q.type === "mcq" && Array.isArray(q.options) && typeof q.answer === "string") {
-      const matched = q.options.find((opt: string) => normalize(opt) === normalize(q.answer));
+    if (
+      q.type === "mcq" &&
+      Array.isArray(q.options) &&
+      typeof q.answer === "string"
+    ) {
+      const matched = q.options.find(
+        (opt: string) => normalize(opt) === normalize(q.answer as string)
+      );
       if (matched) q.answer = matched;
       else throw new Error(`Question ${i + 1} has an invalid MCQ answer.`);
+    }
+
+    if (
+      (q.type === "cloze" || q.type === "short_answer") &&
+      typeof q.answer === "string"
+    ) {
+      ensureGuidedOptions(q, content);
     }
 
     if (!isValidQuestion(q)) {

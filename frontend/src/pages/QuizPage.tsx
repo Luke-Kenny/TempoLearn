@@ -45,15 +45,19 @@ interface LocationState {
   materialId: string;
 }
 
-const normalize = (input: string | boolean) => {
-  if (typeof input === "boolean") return input;
+// Always return a string so downstream string ops (split, includes) are safe
+const normalize = (input: string | boolean): string => {
+  if (typeof input === "boolean") return input ? "true" : "false";
   return input.trim().toLowerCase().replace(/[^\w\s]/gi, "");
 };
 
 const diffColor = (d: Question["difficulty"]) =>
   d === "easy" ? "#86efac" : d === "hard" ? "#fca5a5" : "#93c5fd";
 
-const Panel: React.FC<React.PropsWithChildren<{ sx?: object }>> = ({ children, sx }) => (
+const Panel: React.FC<React.PropsWithChildren<{ sx?: object }>> = ({
+  children,
+  sx,
+}) => (
   <Card
     elevation={0}
     sx={{
@@ -92,7 +96,10 @@ const QuizPage: React.FC = () => {
 
   const total = quizData?.length || 0;
   const progress = total ? ((currentIndex + 1) / total) * 100 : 0;
-  const timeElapsedSec = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+  const timeElapsedSec = Math.max(
+    0,
+    Math.round((Date.now() - startedAt) / 1000)
+  );
 
   const groupRef = useRef<HTMLDivElement | null>(null);
 
@@ -152,9 +159,36 @@ const QuizPage: React.FC = () => {
     goNext(value);
   };
 
-  const handleShortAnswerSubmit = () => {
+  // Guided input for cloze/short_answer: keyword-based loose matching + options fallback
+  const handleGuidedShortAnswerSubmit = () => {
     if (!shortAnswerText.trim()) return;
-    handleSelect(shortAnswerText.trim());
+
+    const userAns = normalize(shortAnswerText);
+    // Force string for safety before splitting
+    const correctAns = normalize(String(currentQuestion!.answer));
+
+    let isGuidedMatch = false;
+
+    // Keyword-based loose matching (order-insensitive)
+    const correctKeywords = correctAns.split(/\s+/).filter(Boolean);
+    const userKeywords = userAns.split(/\s+/).filter(Boolean);
+    if (correctKeywords.every((word) => userKeywords.includes(word))) {
+      isGuidedMatch = true;
+    }
+
+    // If options exist (e.g., synonyms/variants), accept any normalized match
+    if (currentQuestion?.options) {
+      isGuidedMatch =
+        isGuidedMatch ||
+        currentQuestion.options.some((opt) => normalize(opt) === userAns);
+    }
+
+    // If guided match, pass the canonical correct answer to mark correct; else pass raw input
+    if (isGuidedMatch) {
+      handleSelect(currentQuestion!.answer);
+    } else {
+      handleSelect(shortAnswerText.trim());
+    }
   };
 
   const handleRestart = () => {
@@ -171,11 +205,19 @@ const QuizPage: React.FC = () => {
     if (!currentQuestion || submitted) return;
     if (currentQuestion.type === "mcq" && currentQuestion.options) {
       const idx = parseInt(e.key, 10);
-      if (!Number.isNaN(idx) && idx >= 1 && idx <= currentQuestion.options.length) {
+      if (
+        !Number.isNaN(idx) &&
+        idx >= 1 &&
+        idx <= currentQuestion.options.length
+      ) {
         handleSelect(currentQuestion.options[idx - 1]);
       }
-    } else if ((currentQuestion.type === "cloze" || currentQuestion.type === "short_answer") && e.key === "Enter") {
-      handleShortAnswerSubmit();
+    } else if (
+      (currentQuestion.type === "cloze" ||
+        currentQuestion.type === "short_answer") &&
+      e.key === "Enter"
+    ) {
+      handleGuidedShortAnswerSubmit();
     } else if (currentQuestion.type === "true_false") {
       if (e.key.toLowerCase() === "t") handleSelect(true);
       if (e.key.toLowerCase() === "f") handleSelect(false);
@@ -191,11 +233,9 @@ const QuizPage: React.FC = () => {
         background: `radial-gradient(900px 600px at 20% 0%, rgba(46,204,113,0.06) 0%, transparent 70%),
                      radial-gradient(800px 500px at 80% 15%, rgba(45,156,219,0.05) 0%, transparent 65%),
                      linear-gradient(to bottom right, ${T.colors.heroA}, ${T.colors.heroB})`,
-        // Center the card vertically & horizontally
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        // Allow scrolling when results are long
         overflowY: "auto",
         px: 2,
         py: 4,
@@ -204,27 +244,42 @@ const QuizPage: React.FC = () => {
       <Panel
         sx={{
           width: "min(960px, 92vw)",
-          // Keep the card from exceeding viewport height when content is huge
           maxHeight: { xs: "none", md: "calc(100vh - 48px)" },
           overflow: "auto",
         }}
       >
         <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
           {/* Header */}
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mb: 2 }}
+          >
             <Stack direction="row" alignItems="center" spacing={1}>
               <BoltRounded sx={{ color: T.colors.accent }} />
-              <Typography variant="h6" sx={{ fontWeight: 800, color: T.colors.textPrimary }}>
-                {submitted ? "Quiz Summary" : `Question ${currentIndex + 1} of ${total}`}
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 800, color: T.colors.textPrimary }}
+              >
+                {submitted
+                  ? "Quiz Summary"
+                  : `Question ${currentIndex + 1} of ${total}`}
               </Typography>
             </Stack>
             {!submitted && currentQuestion && (
               <Stack direction="row" spacing={1} alignItems="center">
                 <Tooltip title="Elapsed time">
-                  <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: T.colors.textMuted }}>
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    alignItems="center"
+                    sx={{ color: T.colors.textMuted }}
+                  >
                     <AccessTimeRounded fontSize="small" />
                     <Typography variant="body2">
-                      {Math.floor(timeElapsedSec / 60)}:{String(timeElapsedSec % 60).padStart(2, "0")}
+                      {Math.floor(timeElapsedSec / 60)}:
+                      {String(timeElapsedSec % 60).padStart(2, "0")}
                     </Typography>
                   </Stack>
                 </Tooltip>
@@ -234,9 +289,18 @@ const QuizPage: React.FC = () => {
                   sx={{
                     fontWeight: 700,
                     color: diffColor(currentQuestion.difficulty),
-                    borderColor: alpha(diffColor(currentQuestion.difficulty), 0.5),
-                    bgcolor: alpha(diffColor(currentQuestion.difficulty), 0.12),
-                    border: `1px solid ${alpha(diffColor(currentQuestion.difficulty), 0.4)}`,
+                    borderColor: alpha(
+                      diffColor(currentQuestion.difficulty),
+                      0.5
+                    ),
+                    bgcolor: alpha(
+                      diffColor(currentQuestion.difficulty),
+                      0.12
+                    ),
+                    border: `1px solid ${alpha(
+                      diffColor(currentQuestion.difficulty),
+                      0.4
+                    )}`,
                   }}
                 />
               </Stack>
@@ -254,7 +318,10 @@ const QuizPage: React.FC = () => {
                 borderRadius: 999,
                 backgroundColor: alpha("#fff", 0.06),
                 "& .MuiLinearProgress-bar": {
-                  background: `linear-gradient(90deg, ${alpha(T.colors.accent, 0.7)}, ${T.colors.accent})`,
+                  background: `linear-gradient(90deg, ${alpha(
+                    T.colors.accent,
+                    0.7
+                  )}, ${T.colors.accent})`,
                   boxShadow: `0 0 10px ${alpha(T.colors.accent, 0.35)}`,
                 },
               }}
@@ -264,10 +331,21 @@ const QuizPage: React.FC = () => {
           {/* Content */}
           {submitted ? (
             <>
-              <Typography variant="h4" align="center" sx={{ fontWeight: 800, color: T.colors.textPrimary, mb: 0.5 }}>
+              <Typography
+                variant="h4"
+                align="center"
+                sx={{
+                  fontWeight: 800,
+                  color: T.colors.textPrimary,
+                  mb: 0.5,
+                }}
+              >
                 Quiz Complete!
               </Typography>
-              <Typography align="center" sx={{ color: T.colors.textMuted, mb: 3 }}>
+              <Typography
+                align="center"
+                sx={{ color: T.colors.textMuted, mb: 3 }}
+              >
                 Score:{" "}
                 <b style={{ color: "#22c55e" }}>
                   {score} / {total} ({Math.round((score / total) * 100)}%)
@@ -275,7 +353,11 @@ const QuizPage: React.FC = () => {
               </Typography>
 
               {showEmotionDialog && user && (
-                <EmotionLogger open={showEmotionDialog} onClose={() => setShowEmotionDialog(false)} materialId={materialId} />
+                <EmotionLogger
+                  open={showEmotionDialog}
+                  onClose={() => setShowEmotionDialog(false)}
+                  materialId={materialId}
+                />
               )}
 
               <Divider sx={{ borderColor: T.colors.borderWeak, mb: 2 }} />
@@ -283,25 +365,58 @@ const QuizPage: React.FC = () => {
               <Stack spacing={2.5}>
                 {quizData.map((q, idx) => {
                   const userAnswer = answers[idx];
-                  const isCorrect = normalize(userAnswer) === normalize(q.answer);
+                  const isCorrect =
+                    normalize(userAnswer) === normalize(q.answer);
                   return (
-                    <Box key={idx} sx={{ p: 2, borderRadius: 2, bgcolor: alpha("#fff", 0.02) }}>
-                      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
-                        {isCorrect ? <CheckRounded sx={{ color: "#22c55e" }} /> : <CloseRounded sx={{ color: "#ef4444" }} />}
-                        <Typography sx={{ fontWeight: 700, color: T.colors.textPrimary }}>
+                    <Box
+                      key={idx}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: alpha("#fff", 0.02),
+                      }}
+                    >
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        spacing={1}
+                        sx={{ mb: 0.5 }}
+                      >
+                        {isCorrect ? (
+                          <CheckRounded sx={{ color: "#22c55e" }} />
+                        ) : (
+                          <CloseRounded sx={{ color: "#ef4444" }} />
+                        )}
+                        <Typography
+                          sx={{
+                            fontWeight: 700,
+                            color: T.colors.textPrimary,
+                          }}
+                        >
                           Q{idx + 1}: {q.question}
                         </Typography>
                       </Stack>
-                      <Typography variant="body2" sx={{ color: isCorrect ? "#22c55e" : "#ef4444" }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: isCorrect ? "#22c55e" : "#ef4444",
+                        }}
+                      >
                         Your Answer: <b>{String(userAnswer)}</b>
                       </Typography>
                       {!isCorrect && (
-                        <Typography variant="body2" sx={{ color: "#fbbf24" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "#fbbf24" }}
+                        >
                           Correct Answer: <b>{String(q.answer)}</b>
                         </Typography>
                       )}
                       {q.explanation && (
-                        <Typography variant="body2" sx={{ color: "#7dd3fc", mt: 0.5 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "#7dd3fc", mt: 0.5 }}
+                        >
                           Explanation: {q.explanation}
                         </Typography>
                       )}
@@ -310,7 +425,11 @@ const QuizPage: React.FC = () => {
                 })}
               </Stack>
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mt: 3 }}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.5}
+                sx={{ mt: 3 }}
+              >
                 <Button
                   fullWidth
                   variant="contained"
@@ -352,58 +471,87 @@ const QuizPage: React.FC = () => {
                 </Typography>
 
                 {/* Interactive area */}
-                <Box ref={groupRef} tabIndex={0} onKeyDown={onKeyDown} role="group" aria-label="Answer choices">
-                  {currentQuestion?.type === "mcq" && currentQuestion.options && (
-                    <RadioGroup value={selectedAnswer} sx={{ color: T.colors.textPrimary }}>
-                      {currentQuestion.options.map((opt, idx) => {
-                        const isCorrect = normalize(opt) === normalize(currentQuestion.answer);
-                        const isSelected = selectedAnswer === opt;
-                        const showBG = showAnswerResult && isSelected;
-                        return (
-                          <FormControlLabel
-                            key={opt}
-                            value={opt}
-                            onChange={() => handleSelect(opt)}
-                            control={
-                              <Radio
-                                disableRipple
-                                sx={{
-                                  color: T.colors.accent,
-                                  "&.Mui-checked": {
-                                    color: isCorrect ? "#22c55e" : isSelected ? "#ef4444" : T.colors.accent,
-                                  },
-                                }}
-                              />
-                            }
-                            label={`${idx + 1}. ${opt}`}
-                            sx={{
-                              mb: 1,
-                              borderRadius: 2,
-                              px: 2,
-                              py: 1,
-                              cursor: "pointer",
-                              backgroundColor: showBG
-                                ? isCorrect
-                                  ? alpha("#22c55e", 0.15)
-                                  : alpha("#ef4444", 0.15)
-                                : "transparent",
-                              border: `1px solid ${
-                                showBG ? (isCorrect ? alpha("#22c55e", 0.4) : alpha("#ef4444", 0.4)) : alpha("#fff", 0.06)
-                              }`,
-                              transition: "background-color .18s ease, transform .08s ease",
-                              "&:hover": { backgroundColor: alpha("#fff", 0.03) },
-                            }}
-                          />
-                        );
-                      })}
-                    </RadioGroup>
-                  )}
+                <Box
+                  ref={groupRef}
+                  tabIndex={0}
+                  onKeyDown={onKeyDown}
+                  role="group"
+                  aria-label="Answer choices"
+                >
+                  {currentQuestion?.type === "mcq" &&
+                    currentQuestion.options && (
+                      <RadioGroup
+                        // ensure a string value for the RadioGroup
+                        value={
+                          typeof selectedAnswer === "boolean"
+                            ? String(selectedAnswer)
+                            : selectedAnswer
+                        }
+                        sx={{ color: T.colors.textPrimary }}
+                      >
+                        {currentQuestion.options.map((opt, idx) => {
+                          const isCorrect =
+                            normalize(opt) ===
+                            normalize(currentQuestion.answer);
+                          const isSelected = selectedAnswer === opt;
+                          const showBG = showAnswerResult && isSelected;
+                          return (
+                            <FormControlLabel
+                              key={opt}
+                              value={opt}
+                              onChange={() => handleSelect(opt)}
+                              control={
+                                <Radio
+                                  disableRipple
+                                  sx={{
+                                    color: T.colors.accent,
+                                    "&.Mui-checked": {
+                                      color: isCorrect
+                                        ? "#22c55e"
+                                        : isSelected
+                                        ? "#ef4444"
+                                        : T.colors.accent,
+                                    },
+                                  }}
+                                />
+                              }
+                              label={`${idx + 1}. ${opt}`}
+                              sx={{
+                                mb: 1,
+                                borderRadius: 2,
+                                px: 2,
+                                py: 1,
+                                cursor: "pointer",
+                                backgroundColor: showBG
+                                  ? isCorrect
+                                    ? alpha("#22c55e", 0.15)
+                                    : alpha("#ef4444", 0.15)
+                                  : "transparent",
+                                border: `1px solid ${
+                                  showBG
+                                    ? isCorrect
+                                      ? alpha("#22c55e", 0.4)
+                                      : alpha("#ef4444", 0.4)
+                                    : alpha("#fff", 0.06)
+                                }`,
+                                transition:
+                                  "background-color .18s ease, transform .08s ease",
+                                "&:hover": {
+                                  backgroundColor: alpha("#fff", 0.03),
+                                },
+                              }}
+                            />
+                          );
+                        })}
+                      </RadioGroup>
+                    )}
 
                   {currentQuestion?.type === "true_false" && (
                     <Stack direction="row" gap={1.5} flexWrap="wrap">
                       {["True", "False"].map((val) => {
                         const boolVal = val === "True";
-                        const isCorrect = boolVal === currentQuestion.answer;
+                        const isCorrect =
+                          boolVal === currentQuestion.answer;
                         const isSelected = selectedAnswer === boolVal;
                         const showBG = showAnswerResult && isSelected;
                         return (
@@ -438,13 +586,26 @@ const QuizPage: React.FC = () => {
                   )}
 
                   {currentQuestion &&
-                    (currentQuestion.type === "short_answer" || currentQuestion.type === "cloze") && (
+                    (currentQuestion.type === "short_answer" ||
+                      currentQuestion.type === "cloze") && (
                       <Box>
+                        {currentQuestion.options && (
+                          <Typography
+                            variant="body2"
+                            sx={{ color: T.colors.textMuted, mb: 1 }}
+                          >
+                            Hint: Acceptable answers include:{" "}
+                            {currentQuestion.options.join(", ")}
+                          </Typography>
+                        )}
+
                         <TextField
                           fullWidth
                           placeholder="Type your answer"
                           value={shortAnswerText}
-                          onChange={(e) => setShortAnswerText(e.target.value)}
+                          onChange={(e) =>
+                            setShortAnswerText(e.target.value)
+                          }
                           sx={{
                             backgroundColor: alpha("#fff", 0.96),
                             borderRadius: 2,
@@ -454,12 +615,14 @@ const QuizPage: React.FC = () => {
                         />
                         <Button
                           variant="contained"
-                          onClick={handleShortAnswerSubmit}
+                          onClick={handleGuidedShortAnswerSubmit}
                           disabled={!shortAnswerText.trim()}
                           sx={{
                             backgroundColor: T.colors.accent,
                             color: "#0d0f12",
-                            "&:hover": { backgroundColor: T.colors.accentHover },
+                            "&:hover": {
+                              backgroundColor: T.colors.accentHover,
+                            },
                             fontWeight: 800,
                             textTransform: "none",
                             borderRadius: 999,
