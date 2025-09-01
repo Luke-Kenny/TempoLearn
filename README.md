@@ -77,6 +77,11 @@ It is built with a modern full-stack approach: **React + TypeScript + Vite** on 
 
 ## Getting Started
 
+### Run Frontend
+```bash
+cd frontend
+npm run dev
+
 ### Run Backend
 ```bash
 cd backend
