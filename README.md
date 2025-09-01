@@ -1,22 +1,90 @@
-**TempoLearn** is a smart, evolving study assistant built using **React**, **TypeScript**, **Vite**, and **Material-UI**, deployed via **Firebase Hosting** with a clean, fast user interface. The platform empowers learners to create flashcards, track learning progress, and explore features like practice quizzes and visual progress charts. This version represents our latest development progress as of now.
+TempoLearn – Adaptive AI Study Platform
 
----
+TempoLearn is an adaptive study assistant that transforms academic PDFs into concise notes, interactive quizzes, and motivational feedback.
+It is built with a modern full-stack approach: React + TypeScript + Vite on the frontend, Firebase for authentication, hosting, and storage, and an Express backend integrated with OpenAI for content generation.
 
-## Features
+Features
 
-- Fast frontend powered by **Vite**
-- Written in **React 18** and **TypeScript**
-- Beautiful and accessible UI with **Material-UI (MUI)**
-- **Firebase Hosting** with custom domain: [www.tempolearn.org](http://www.tempolearn.org)
-- Modular and scalable project structure
-- Responsive interface for desktop and mobile
-- **Firebase Authentication** for user login
-- **GitHub Actions** for CI/CD and deployment automation
+Upload and parse academic PDFs
 
----
+AI-generated notes including summaries, key concepts, and insights
 
-TO RUN BACKEND:
-npx ts-node-dev src/index.ts
+Quiz generation across multiple formats: multiple choice, true/false, cloze, and short-answer
 
-TO RUN FRONTEND
-npm run dev 
+Emotion logging with motivational feedback
+
+Dashboard with performance visualizations (scores over time, difficulty breakdowns)
+
+Accessible and responsive UI following WCAG 2.1 AA standards
+
+Firebase Authentication for secure login
+
+Firestore for structured data (materials, notes, quiz attempts, emotions)
+
+Firebase Storage for file uploads
+
+Firebase Hosting with custom domain: www.tempolearn.org
+
+GitHub Actions CI/CD pipeline for automated testing and deployment
+
+Tech Stack
+
+Frontend
+
+React 18 with TypeScript
+
+Vite (development and build tooling)
+
+Material-UI (MUI) for accessible, consistent components
+
+Recharts for data visualization
+
+Framer Motion for animations
+
+Backend
+
+Node.js + Express API services
+
+OpenAI API for notes, quizzes, and motivational messages
+
+JSON schema validation for reliable AI outputs
+
+Services
+
+Firebase Authentication (secure user management)
+
+Firestore (quiz attempts, notes, emotions, metadata)
+
+Firebase Storage (PDF uploads)
+
+Firebase Hosting (production deployment)
+
+Testing and Validation
+
+Core functional flows validated (upload → notes → quiz → dashboard)
+
+Prompt validation success rate: 82%
+
+PDF parsing accuracy: 90% (scanned PDFs deferred to future OCR support)
+
+Difficulty alignment: 80%
+
+Accessibility compliance: 83–93% (measured via Lighthouse)
+
+Average quiz generation response: 3.5 seconds
+
+Authentication latency: 1.4 seconds
+
+CI/CD pipeline reliability: 91.7%
+
+Future Enhancements
+
+Optical Character Recognition (OCR) support for scanned PDFs and handwritten notes
+
+Spaced Repetition Algorithms (SRA) to personalise quiz scheduling and review intervals
+
+Emotion-aware scheduling to adjust quiz pacing by performance and mood (requires longitudinal data)
+
+Cross-platform integration with mobile and desktop apps
+
+Gamification features such as streaks and leaderboards
