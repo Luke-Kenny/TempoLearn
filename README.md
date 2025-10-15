@@ -8,7 +8,7 @@ It is built with a modern full-stack approach: **React + TypeScript + Vite** on 
 ## Features
 
 - Upload and parse academic PDFs
-- AI-generated notes including summaries, key concepts, and insights
+- Custom-generated notes including summaries, key concepts, and insights based off uploads
 - Quiz generation across multiple formats: multiple choice, true/false, cloze, and short-answer
 - Emotion logging with motivational feedback
 - Dashboard with performance visualizations (scores over time, difficulty breakdowns)
